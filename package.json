@@ -1,0 +1,23 @@
+{
+  "name": "zepe-tech",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "pino": "^9.6.0"
+  },
+  "description": "ZEPE TECH mobile-first WhatsApp bot dashboard, black and gold MVP"
+}
