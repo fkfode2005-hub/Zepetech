@@ -69,6 +69,47 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 .cav{width:40px;height:40px;border-radius:50%;background:#14382a;color:var(--g2);display:grid;place-items:center;font-weight:700;flex:none}
 .cinfo{display:flex;flex-direction:column;min-width:0;flex:1}.cinfo small{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dmSearch{margin-top:12px}
+
+/* ---- Ajout : choix du serveur + compteur de slots ---- */
+.slotnote{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:12px 14px;border-radius:16px;background:#10241b;border:1px solid #1d5a3d}
+.slotnote.none{background:#2a1512;border-color:#4a2420}
+.slotnote .txt{display:flex;flex-direction:column;font-size:14px}.slotnote .txt small{color:var(--mut)}
+.slotnote .cnt{font-weight:800;font-size:15px;color:var(--g2);white-space:nowrap}.slotnote.none .cnt{color:var(--bad)}
+.slotnote button{padding:8px 14px;font-size:13px}
+.srvhead{margin:16px 0 4px;color:var(--mut);font-size:14px}
+.srv{display:block;width:100%;text-align:left;margin-top:10px;padding:14px;border-radius:18px;background:#1b2420;color:var(--txt);border:1px solid var(--line);font-weight:400}
+.srv.sel{border-color:var(--g);background:#10241b}
+.srv.full{opacity:.55;border-style:dashed;border-color:#4a2420;cursor:not-allowed}
+.srv .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.srv .nm{font-weight:700;font-size:17px}
+.srv .st{font-size:13px;color:var(--g2);display:flex;align-items:center;gap:6px;margin-top:2px}
+.srv .st.offl{color:var(--mut)}
+.srv .cap{font-size:12px;padding:3px 10px;border-radius:99px;background:#17263d;color:#8ab4ff;border:1px solid #243b66;white-space:nowrap}
+.srv.full .cap{background:#2a1512;color:var(--bad);border-color:#4a2420}
+.srv .meta{margin-top:6px;font-size:12px;color:var(--mut)}
+
+/* ---- Ajout : fenêtre Premium ---- */
+.mod{position:fixed;inset:0;z-index:20;background:#000000b3;display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid #4a3a14;border-radius:26px 26px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.phead{display:flex;align-items:center;gap:14px;padding:18px;background:linear-gradient(180deg,#2e2410,#1b1a13);border-radius:26px 26px 0 0}
+.phead .star{width:44px;height:44px;border-radius:14px;background:#4a3a14;color:#f7b24a;display:grid;place-items:center;font-size:24px;flex:none}
+.phead h2{font-size:22px}.phead small{color:#f7b24a;font-weight:700;letter-spacing:.5px;font-size:12px}
+.phead .tx{flex:1;min-width:0}
+.pbody{padding:0 18px}
+.perks{margin-top:16px;padding:14px 16px;border-radius:18px;background:#2a2410;border:1px solid #5a4614}
+.perks b{color:#f7d27a;font-size:16px}.perks ul{list-style:none;margin:8px 0 0;padding:0;color:#e8dfc2;font-size:14px}
+.perks li{margin-top:6px}.perks li::before{content:"✓ ";color:#f7b24a;font-weight:700}
+.phone{display:flex;gap:8px}.phone select{background:#0a0e0d;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px 8px;font:inherit;max-width:42%}
+.durs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.durs button{background:#1b2420;color:var(--mut);border:2px solid var(--line);border-radius:16px;padding:16px 4px;font-size:16px}
+.durs button.sel{border-color:#f5a623;background:#2a2410;color:#f7b24a}
+.price{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px;padding:16px;border-radius:18px;background:#2a2410;border:1px solid #5a4614}
+.price small{display:block;color:var(--mut);font-weight:700;letter-spacing:.5px;font-size:12px}
+.paybox{margin-top:14px;padding:14px 16px;border-radius:18px;background:#10241b;border:1px solid #1d5a3d}
+.paybox p{margin:6px 0;color:var(--txt);font-size:14px}
+.paynum{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px 12px;border-radius:14px;background:#0a0e0d;border:1px dashed var(--g)}
+.paynum b{font-size:20px;letter-spacing:1px;color:var(--g2)}.paynum button{padding:8px 14px;font-size:13px}
+.price b{font-size:22px}.price .amt{text-align:right}.price .amt b{font-size:28px;color:#f7b24a}
 </style>
 </head>
 <body>
@@ -93,6 +134,7 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 <section class="chips" data-v="home bots">
   <button class="w" id="showAdd">+ Ajouter un bot</button>
   <button class="ol" id="showHelp">🎮 Aide au déploiement</button>
+  <button class="o" id="showPremium">⭐ Premium</button>
   <button class="line" id="showTransfer">✈ Transférer des coins</button>
 </section>
 
@@ -104,6 +146,14 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <h2>Déployer un bot</h2>
   <ol class="steps3"><li id="s1" class="on">1 · Numéro</li><li id="s2">2 · Code</li><li id="s3">3 · En ligne</li></ol>
   <div id="w1">
+    <div class="slotnote" id="slotNote">
+      <div class="txt"><span>🎟 Slots actifs</span><small id="slotNoteSub"></small></div>
+      <span class="cnt" id="slotNoteCnt">0</span>
+      <button class="o" type="button" id="slotNoteBuy">Acheter un slot</button>
+    </div>
+    <div class="srvhead">Choisis ton serveur d'hébergement</div>
+    <div id="srvList" role="radiogroup" aria-label="Serveur d'hébergement"></div>
+    <input id="serverId" type="hidden" value="">
     <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
     <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
     <button class="g full" id="deployBtn">Déployer</button>
@@ -177,6 +227,44 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <form id="dmForm" class="chatform"><input id="dmInput" maxlength="300" placeholder="Écris un message…" autocomplete="off" aria-label="Message"><button class="g" type="submit">Envoyer</button></form>
 </section>
 
+<div class="mod off" id="premModal" role="dialog" aria-modal="true" aria-labelledby="premTitle">
+  <div class="sheet">
+    <div class="phead">
+      <div class="star">★</div>
+      <div class="tx"><h2 id="premTitle">Numéro Premium</h2><small>PAIEMENT REQUIS</small></div>
+      <button class="ic" type="button" id="premClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="pbody">
+      <div class="perks"><b id="perkTitle"></b><ul id="perkList"></ul></div>
+      <label for="premPhone">📱 Numéro de téléphone WhatsApp</label>
+      <div class="phone">
+        <select id="premCc" aria-label="Indicatif pays">
+          <option value="224">🇬🇳 +224</option><option value="221">🇸🇳 +221</option><option value="225">🇨🇮 +225</option>
+          <option value="223">🇲🇱 +223</option><option value="237">🇨🇲 +237</option><option value="228">🇹🇬 +228</option>
+          <option value="229">🇧🇯 +229</option><option value="33">🇫🇷 +33</option><option value="1">🇺🇸 +1</option>
+        </select>
+        <input id="premPhone" inputmode="numeric" placeholder="6XXXXXXXX" autocomplete="tel-national">
+      </div>
+      <label>📅 Durée de l'abonnement</label>
+      <div class="durs" id="durs" role="radiogroup" aria-label="Durée"></div>
+      <div class="price"><div><small>DURÉE</small><b id="pDur"></b></div><div class="amt"><small>PRIX</small><b id="pAmt"></b></div></div>
+      <div id="payStep1"><button class="o full" type="button" id="premNext">Continuer</button></div>
+      <div id="payStep2" class="off">
+        <div class="paybox">
+          <p>1. Envoie <b id="payAmt"></b> par <span id="payMethod"></span> au numéro :</p>
+          <div class="paynum"><b id="payNum"></b><button class="line" type="button" id="payCopy">Copier</button></div>
+          <p>2. Saisis ci-dessous la référence de la transaction (reçue par SMS).</p>
+        </div>
+        <label for="payRef">Référence de la transaction</label>
+        <input id="payRef" maxlength="40" autocomplete="off" placeholder="Ex. : MP2611…">
+        <button class="o full" type="button" id="premPay">✅ J'ai payé</button>
+        <button class="line full" type="button" id="payBack">← Retour</button>
+      </div>
+      <p class="mut" id="premFoot" style="text-align:center;margin-top:12px"></p>
+    </div>
+  </div>
+</div>
+
 <nav>
   <button data-go="home" class="on"><span>🏠</span>Accueil</button>
   <button data-go="bots"><span>🤖</span>Mes bots</button>
@@ -184,6 +272,125 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <button data-go="messages"><span>👥</span>Groupe</button>
   <button data-go="settings"><span>⚙️</span>Réglages</button>
 </nav>
+
+<script>
+/* Choix du serveur + compteur de slots dans la fenêtre « Déployer un bot ».
+   - Les serveurs viennent de GET /api/servers (tableau de {id,name,online,active,max,host,created}).
+   - Si cette route n'existe pas encore, la liste de secours ci-dessous est utilisée.
+   - Le serveur choisi est dans window.zepeServerId et dans l'input caché #serverId. */
+(function(){
+  var FALLBACK=[{id:'zepe-1',name:'Zepe Serveur 1',online:true,active:0,max:50,host:'Zepe Tech',created:'10/11/2026'}];
+  var list=document.getElementById('srvList'),hid=document.getElementById('serverId');
+  window.zepeServerId='';
+
+  function pick(s,el){
+    if(!s.online||s.active>=s.max)return;
+    var all=list.querySelectorAll('.srv');
+    for(var i=0;i<all.length;i++){all[i].classList.remove('sel');all[i].setAttribute('aria-checked','false');}
+    el.classList.add('sel');el.setAttribute('aria-checked','true');
+    hid.value=s.id;window.zepeServerId=s.id;
+  }
+  function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+  function render(servers){
+    list.textContent='';
+    var first=null;
+    servers.forEach(function(s){
+      var full=s.active>=s.max,el=mk('button','srv'+(full||!s.online?' full':''));
+      el.type='button';el.setAttribute('role','radio');el.setAttribute('aria-checked','false');
+      var top=mk('div','top'),left=mk('div');
+      left.appendChild(mk('div','nm',s.name));
+      left.appendChild(mk('div','st'+(s.online?'':' offl'),(s.online?'● en ligne':'● hors ligne')));
+      top.appendChild(left);top.appendChild(mk('span','cap',s.active+'/'+s.max+' actifs'));
+      el.appendChild(top);
+      var meta=[];if(s.host)meta.push('Hébergé par '+s.host);if(s.created)meta.push('Créé le '+s.created);
+      if(meta.length)el.appendChild(mk('div','meta',meta.join(' · ')));
+      el.addEventListener('click',function(){pick(s,el);});
+      list.appendChild(el);
+      if(!first&&s.online&&!full)first={s:s,el:el};
+    });
+    if(first)pick(first.s,first.el);
+  }
+  fetch('/api/servers',{credentials:'same-origin'})
+    .then(function(r){return r.ok?r.json():Promise.reject();})
+    .then(function(d){render(Array.isArray(d)&&d.length?d:FALLBACK);})
+    .catch(function(){render(FALLBACK);});
+
+  /* Compteur de slots : suit la valeur déjà affichée dans #sSlots par dash.js */
+  var src=document.getElementById('sSlots'),note=document.getElementById('slotNote'),
+      cnt=document.getElementById('slotNoteCnt'),sub=document.getElementById('slotNoteSub'),
+      buy=document.getElementById('slotNoteBuy');
+  function sync(){
+    var n=parseInt(src.textContent,10)||0;
+    if(n>0){note.classList.remove('none');cnt.textContent=n+' dispo';sub.textContent='Un slot sera utilisé pour ce bot.';buy.classList.add('off');}
+    else{note.classList.add('none');cnt.textContent='0 slot';sub.textContent='Il faut un slot actif pour faire tourner un bot.';buy.classList.remove('off');}
+  }
+  new MutationObserver(sync).observe(src,{childList:true,characterData:true,subtree:true});
+  sync();
+  buy.addEventListener('click',function(){var b=document.getElementById('buySlot');if(b)b.click();});
+})();
+</script>
+<script>
+/* Fenêtre Premium. Modifie CFG pour changer prix, durées et avantages.
+   Le bouton Payer appelle POST /api/premium/checkout {days, phone} et attend {url} en réponse
+   (lien de paiement). Tant que cette route n'existe pas, un message est affiché. */
+(function(){
+  var CFG={
+    currency:'GNF',
+    payNumber:'224610888616',   /* numéro qui reçoit les paiements */
+    payMethod:'Mobile Money',   /* ex. : Orange Money, MTN MoMo */
+    plans:[{days:30,price:30000},{days:60,price:60000},{days:90,price:90000}],
+    perkTitle:'Avantages Premium',
+    perks:['Interface sans publicité sur tout le dashboard','Slot d\'abonnement inclus · Badge VIP · Statut Premium','Déploiement illimité même si la limite globale est atteinte'],
+    foot:'Activation après vérification du paiement'
+  };
+  var $=function(id){return document.getElementById(id);};
+  var modal=$('premModal'),durs=$('durs'),sel=CFG.plans[0],opener=null;
+  function money(n){return n.toLocaleString('fr-FR')+' '+CFG.currency;}
+  function say(t){var el=$('toast');if(!el)return;el.textContent=t;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},3000);}
+  function paint(){
+    var bs=durs.querySelectorAll('button');
+    for(var i=0;i<bs.length;i++){var on=CFG.plans[i]===sel;bs[i].classList.toggle('sel',on);bs[i].setAttribute('aria-checked',on?'true':'false');}
+    $('pDur').textContent=sel.days+' jours';$('pAmt').textContent=money(sel.price);
+  }
+  $('perkTitle').textContent=CFG.perkTitle;$('premFoot').textContent=CFG.foot;
+  CFG.perks.forEach(function(p){var li=document.createElement('li');li.textContent=p;$('perkList').appendChild(li);});
+  CFG.plans.forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=p.days+' jours';
+    b.addEventListener('click',function(){sel=p;paint();});durs.appendChild(b);
+  });
+  paint();
+  function steps(two){$('payStep1').classList.toggle('off',two);$('payStep2').classList.toggle('off',!two);}
+  function open(){opener=document.activeElement;steps(false);modal.classList.remove('off');$('premClose').focus();}
+  function close(){modal.classList.add('off');if(opener&&opener.focus)opener.focus();}
+  $('showPremium').addEventListener('click',open);
+  $('premClose').addEventListener('click',close);
+  modal.addEventListener('click',function(e){if(e.target===modal)close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.classList.contains('off'))close();});
+  var cust='';
+  $('premNext').addEventListener('click',function(){
+    var d=$('premPhone').value.replace(/\D/g,'').replace(/^0+/,'');
+    if(d.length<6||d.length>12){say('Numéro invalide.');return;}
+    cust=$('premCc').value+d;
+    $('payAmt').textContent=money(sel.price);$('payMethod').textContent=CFG.payMethod;$('payNum').textContent='+'+CFG.payNumber;
+    steps(true);$('payRef').focus();
+  });
+  $('payBack').addEventListener('click',function(){steps(false);});
+  $('payCopy').addEventListener('click',function(){
+    if(navigator.clipboard){navigator.clipboard.writeText(CFG.payNumber).then(function(){say('Numéro copié.');},function(){say('Copie impossible.');});}
+  });
+  $('premPay').addEventListener('click',function(){
+    var ref=$('payRef').value.trim();
+    if(ref.length<4){say('Saisis la référence de la transaction.');return;}
+    var btn=$('premPay');btn.disabled=true;
+    fetch('/api/premium/request',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({days:sel.days,phone:cust,reference:ref})})
+      .then(function(r){return r.ok?Promise.resolve():Promise.reject();})
+      .then(function(){say('Demande envoyée. Activation après vérification.');$('payRef').value='';close();})
+      .catch(function(){say('Envoi impossible pour le moment.');})
+      .then(function(){btn.disabled=false;});
+  });
+})();
+</script>
 <script src="/dash.js" defer></script>
 </body>
 </html>
