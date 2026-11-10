@@ -53,13 +53,29 @@ nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-b
 nav button{flex:1;background:transparent;color:var(--mut);border-radius:20px;padding:8px 2px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 #toast{position:fixed;left:16px;right:16px;top:12px;z-index:5;background:#14382a;border:1px solid var(--g);color:var(--g2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none}#toast.show{opacity:1}
+.steps3{display:flex;gap:8px;list-style:none;padding:0;margin:12px 0 4px}.steps3 li{flex:1;text-align:center;font-size:12px;padding:8px 4px;border-radius:12px;background:#1b211f;color:var(--mut)}.steps3 li.on{background:#14382a;color:var(--g2)}
+.chatlist{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow-y:auto;margin:14px 0;padding-right:4px}
+.cm{align-self:flex-start;max-width:88%;padding:10px 13px;border-radius:16px 16px 16px 4px;background:#1b2420}
+.cm.me{align-self:flex-end;border-radius:16px 16px 4px 16px;background:#14382a}
+.cmeta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--g2);font-weight:700}
+.cmeta .t2{color:var(--mut);font-size:11px;font-weight:400}
+.cmeta .rl{font-size:10px;padding:1px 7px;border-radius:99px;background:#3a2608;border:1px solid #7a4d10;color:#f7b24a;font-weight:600}
+.cm p{margin:4px 0 0;word-break:break-word}
+.cm .del{background:none;border:0;color:var(--bad);padding:0 2px;font-size:12px;margin-left:auto}
+.chatform{display:flex;gap:8px}.chatform input{flex:1}
+.ic{position:relative}
+.badge2{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;display:grid;place-items:center}
+.conv{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px;border-radius:16px;background:#1b2420;color:var(--txt);text-align:left;border:1px solid var(--line)}
+.cav{width:40px;height:40px;border-radius:50%;background:#14382a;color:var(--g2);display:grid;place-items:center;font-weight:700;flex:none}
+.cinfo{display:flex;flex-direction:column;min-width:0;flex:1}.cinfo small{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dmSearch{margin-top:12px}
 </style>
 </head>
 <body>
 <div id="toast" role="status"></div>
 <header>
   <div class="brand"><div class="mark">Z</div><div><b>ZEPE TECH</b><small>Dashboard</small></div></div>
-  <div class="hicons"><button class="ic" data-soon aria-label="Classement">🏆</button><button class="ic" data-soon aria-label="Notifications">🔔</button><div class="av sm" id="hav">?</div><button class="ic" data-soon aria-label="Messages">💬</button></div>
+  <div class="hicons"><button class="ic" data-soon aria-label="Classement">🏆</button><button class="ic" data-soon aria-label="Notifications">🔔</button><div class="av sm" id="hav">?</div><button class="ic" id="dmBtn" data-soon aria-label="Messages privés">💬<b id="dmBadge" class="badge2 off"></b></button></div>
 </header>
 
 <section data-v="home">
@@ -85,11 +101,21 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <p class="mut">1. Ajoute un bot avec ton numéro WhatsApp.<br>2. Achète un slot avec tes coins.<br>3. Touche Démarrer sur ton bot.<br>4. Dans WhatsApp : Appareils connectés, Connecter avec un numéro, puis saisis le code affiché.</p>
 </section>
 <section class="card off" id="addBox">
-  <h2>Nouveau bot</h2>
-  <label for="label">Nom du bot</label><input id="label" value="Mon bot" maxlength="40">
-  <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
-  <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
-  <button class="g full" id="createBot">Créer le bot</button>
+  <h2>Déployer un bot</h2>
+  <ol class="steps3"><li id="s1" class="on">1 · Numéro</li><li id="s2">2 · Code</li><li id="s3">3 · En ligne</li></ol>
+  <div id="w1">
+    <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
+    <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
+    <button class="g full" id="deployBtn">Déployer</button>
+  </div>
+  <div id="w2" class="off">
+    <p class="mut">Dans WhatsApp : Appareils connectés, Connecter avec un numéro, puis saisis ce code.</p>
+    <div class="code"><b id="wcode">…</b></div>
+  </div>
+  <div id="w3" class="off">
+    <p>✅ Ton bot est en ligne. Écris !menu pour voir les commandes.</p>
+    <button class="g full" id="wdone">Terminer</button>
+  </div>
 </section>
 <section class="card off" id="transferBox">
   <h2>Transférer des coins</h2>
@@ -128,7 +154,11 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 </section>
 
 <section class="card info" data-v="games"><div class="t">🎮</div><div><h3>Jeux</h3><p>Bientôt disponible.</p></div></section>
-<section class="card info" data-v="messages"><div class="t b">💬</div><div><h3>Messages</h3><p>Bientôt disponible.</p></div></section>
+<section class="card" data-v="messages">
+  <h2>Groupe</h2><p class="mut">Discussion ouverte à tous les membres.</p>
+  <div id="chatList" class="chatlist" aria-live="polite"></div>
+  <form id="chatForm" class="chatform"><input id="chatInput" maxlength="300" placeholder="Écris un message…" autocomplete="off" aria-label="Message"><button class="g" type="submit">Envoyer</button></form>
+</section>
 <section class="card" data-v="settings">
   <h2>Réglages</h2>
   <p class="mut" id="setInfo" style="margin:10px 0 14px"></p>
@@ -136,11 +166,22 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <button class="danger full" id="logout">Déconnexion</button>
 </section>
 
+<section class="card" data-v="dm" id="dmHome">
+  <div class="row"><h2>Messages privés</h2><button class="g" id="dmNew" type="button">Nouveau</button></div>
+  <div id="dmPicker" class="off"><input id="dmSearch" placeholder="Chercher un membre…" aria-label="Chercher un membre" autocomplete="off"><div id="dmMembers"></div></div>
+  <div id="dmConvs"></div>
+</section>
+<section class="card off" data-v="dm" id="dmThreadCard">
+  <div class="row"><button class="line" id="dmBack" type="button">← Retour</button><strong id="dmWith"></strong></div>
+  <div id="dmList" class="chatlist" aria-live="polite"></div>
+  <form id="dmForm" class="chatform"><input id="dmInput" maxlength="300" placeholder="Écris un message…" autocomplete="off" aria-label="Message"><button class="g" type="submit">Envoyer</button></form>
+</section>
+
 <nav>
   <button data-go="home" class="on"><span>🏠</span>Accueil</button>
   <button data-go="bots"><span>🤖</span>Mes bots</button>
   <button data-go="games"><span>🎮</span>Jeux</button>
-  <button data-go="messages"><span>💬</span>Messages</button>
+  <button data-go="messages"><span>👥</span>Groupe</button>
   <button data-go="settings"><span>⚙️</span>Réglages</button>
 </nav>
 <script src="/dash.js" defer></script>
