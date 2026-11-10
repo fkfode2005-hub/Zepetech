@@ -31,8 +31,8 @@ const COOLDOWN = 20000;    // attente entre deux clics (ms)
 const MAX_BOTS = 10;       // bots max par compte
 
 // Rôles : définis par e-mail dans les variables d'environnement de Render
-const OWNER_EMAIL = (process.env.OWNER_EMAIL || '').trim().toLowerCase();
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+const OWNER_EMAIL = 'fkfode2005@gmail.com';
+const ADMIN_EMAILS = ['yero9799@gmail.com'];
 const roleOf = u => (OWNER_EMAIL && u.email === OWNER_EMAIL ? 'owner' : ADMIN_EMAILS.includes(u.email) ? 'admin' : 'user');
 
 if (SECRET.length < 32) {
