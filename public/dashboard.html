@@ -1,8 +1,100 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080808"><title>Tableau de bord — ZEPE TECH</title><link rel="stylesheet" href="/style.css"></head><body>
-<header><a class="brand" href="/">✦ ZEPE <span>TECH</span></a><nav><span id="welcome" class="small"></span><button id="logout" class="ghost">Déconnexion</button></nav></header>
-<main class="dash"><div class="dashhead"><div><div class="pill">✦ ESPACE PERSONNEL</div><h1>Ton espace de contrôle</h1><p>Gère tes connexions et tes bots WhatsApp depuis un seul endroit.</p></div><div class="status" id="overall">● Chargement…</div></div>
-<div class="dashgrid"><article class="statcard"><div class="statlabel">Mes bots</div><div class="statvalue" id="botCount">—</div><div class="small">Bots enregistrés</div></article><article class="statcard"><div class="statlabel">En ligne</div><div class="statvalue" id="onlineCount">—</div><div class="small">Connexions actives</div></article><article class="statcard"><div class="statlabel">Plan actuel</div><div class="statvalue" style="font-size:22px">Starter</div><div class="small">1 bot maximum pour cette version</div></article></div>
-<section class="botbox"><h2>＋ Ajouter un bot</h2><form id="botForm" class="botform"><label>Nom du bot<input name="label" placeholder="ZEPE BOT" maxlength="40" value="Mon bot" required></label><label>Numéro WhatsApp<input name="phone" inputmode="numeric" autocomplete="tel" placeholder="224XXXXXXXXX" required></label><button class="primary" type="submit">Créer le bot</button></form><p class="hint">Utilise le format international, chiffres uniquement, sans + ni espaces. Tu dois être propriétaire du compte ou autorisé à le connecter.</p></section>
-<section class="botbox"><div class="rowtitle"><h2>Mes bots</h2><button id="refresh" class="ghost" type="button">↻ Actualiser</button></div><div id="bots" aria-live="polite"><p class="small">Chargement…</p></div></section>
-<div class="sectionlabel">Outils de la plateforme</div><section class="dashsection"><h2>Ton espace ZEPE TECH</h2><div class="featurelist"><div class="featureitem"><div class="featureicon">◇</div><div><b>Statistiques</b><span>Le nombre de bots et leur état sont affichés en haut du tableau de bord.</span></div></div><div class="featureitem"><div class="featureicon">⌘</div><div><b>API développeur</b><span>Prévue pour une prochaine version avec clés révocables et permissions.</span></div></div><div class="featureitem"><div class="featureicon">♧</div><div><b>Affiliation</b><span>Prévue pour une prochaine version avec règles de récompense transparentes.</span></div></div><div class="featureitem"><div class="featureicon">▤</div><div><b>Slots et serveurs</b><span>À configurer avec un hébergement persistant avant d'ouvrir au public.</span></div></div></div></section>
-<div class="notice"><b>Conseil de sécurité</b><p>Ne partage jamais le code de jumelage. Il permet de lier ton compte WhatsApp à un appareil. Cette version est un prototype : avant d'accueillir du public, configure un stockage persistant, des sauvegardes et une isolation des processus de bots.</p></div><footer>ZEPE TECH · Noir & or · Version de départ</footer></main><script src="/dashboard.js" defer></script></body></html>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZEPE TECH · Tableau de bord</title>
+<style>
+:root{--bg:#070707;--card:#121212;--line:#2b2414;--gold:#f2c14e;--gold2:#ffdf8a;--txt:#f5f1e8;--mut:#9b9484;--ok:#34d27b;--bad:#ef6a5b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 400px at 80% -10%,#1d1606,transparent),var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 16px 96px}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:20px;letter-spacing:.5px}.logo b{color:var(--gold)}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:11px 18px;font-weight:700}
+.gold{background:linear-gradient(90deg,var(--gold),var(--gold2));color:#1a1305}
+.line{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.danger{background:transparent;color:var(--bad);border:1px solid #4a2420}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+section{margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px}
+.who{display:flex;gap:14px;align-items:center}
+.av{width:62px;height:62px;border-radius:50%;background:#3a2c0c;border:3px solid var(--gold);display:grid;place-items:center;font-size:26px;font-weight:800;color:var(--gold2)}
+.who h1{margin:0;font-size:24px}.mut{color:var(--mut);font-size:14px;margin:2px 0 0;word-break:break-all}
+.coins{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.big{font-size:40px;font-weight:800;line-height:1;color:var(--gold2)}
+.chips{display:flex;gap:10px;overflow-x:auto;padding:2px 0}.chips button{white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.stats b{display:block;font-size:28px}.stats span{color:var(--mut);font-size:13px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+h2{margin:0;font-size:22px}
+label{display:block;margin:10px 0 6px;color:var(--mut);font-size:14px}
+input{width:100%;background:#0b0b0b;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit}
+.hidden{display:none}
+.bot{border-top:1px solid var(--line);padding:14px 0}.bot:first-child{border-top:0}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.pill.online{color:var(--ok);border-color:#1f4d36}.pill.pairing,.pill.starting{color:var(--gold);border-color:#5a4513}
+.code{margin:10px 0;padding:12px;border-radius:14px;background:#1a1405;border:1px dashed var(--gold);text-align:center}
+.code b{display:block;font-size:30px;letter-spacing:6px;color:var(--gold2)}
+.acts{display:flex;gap:8px;margin-top:10px}
+nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-around;background:#0e0e0eee;border:1px solid var(--line);border-radius:22px;padding:6px}
+nav a{color:var(--mut);text-decoration:none;font-size:13px;padding:10px 12px;border-radius:16px}
+nav a:first-child{color:var(--gold);background:#1c1606}
+#toast{position:fixed;left:16px;right:16px;top:12px;background:#1c1606;border:1px solid var(--gold);color:var(--gold2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="toast" role="status"></div>
+<header><div class="logo">ZEPE <b>TECH</b></div><button class="line" id="logout">Déconnexion</button></header>
+
+<section class="card who" id="home">
+  <div class="av" id="avatar">?</div>
+  <div><h1 id="name">Chargement…</h1><p class="mut" id="email"></p><p class="mut" id="since"></p></div>
+</section>
+
+<section class="card coins">
+  <div><div class="big" id="coins">–</div><div class="mut">ZepeCoins</div></div>
+  <div style="text-align:right"><button class="gold" id="claim">Obtenir des coins</button><div class="mut" id="claims" style="margin-top:6px"></div></div>
+</section>
+
+<section class="chips">
+  <button class="gold" id="showAdd">Ajouter un bot</button>
+  <button class="line" id="showTransfer">Transférer des coins</button>
+</section>
+
+<section class="card hidden" id="addBox">
+  <h2>Nouveau bot</h2>
+  <label for="label">Nom du bot</label><input id="label" value="Mon bot" maxlength="40">
+  <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
+  <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
+  <button class="gold" id="createBot">Créer le bot</button>
+</section>
+
+<section class="card hidden" id="transferBox">
+  <h2>Transférer des coins</h2>
+  <label for="tmail">E-mail du destinataire</label><input id="tmail" type="email">
+  <label for="tamount">Montant</label><input id="tamount" inputmode="numeric">
+  <p></p><button class="gold" id="sendCoins">Envoyer</button>
+</section>
+
+<section class="card stats">
+  <div><b id="sOn">0</b><span>en ligne</span></div>
+  <div><b id="sOff">0</b><span>hors ligne</span></div>
+  <div><b id="sSlots">0</b><span>slots libres</span></div>
+</section>
+
+<section class="card" id="bots">
+  <div class="row"><h2>Mes bots <span class="mut" id="botCount"></span></h2></div>
+  <div id="botList"></div>
+</section>
+
+<section class="card" id="slots">
+  <div class="row"><h2>Mes slots</h2><button class="gold" id="buySlot">Acheter</button></div>
+  <p class="mut" id="slotInfo"></p>
+</section>
+
+<nav><a href="#home">Accueil</a><a href="#bots">Mes bots</a><a href="#slots">Slots</a></nav>
+<script src="/dash.js" defer></script>
+</body>
+</html>
