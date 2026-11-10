@@ -95,7 +95,7 @@ function setSession(res, user) {
 const today = () => new Date().toISOString().slice(0, 10);
 const claimsToday = u => (u.claims && u.claims.day === today() ? u.claims.n : 0);
 function cleanUser(u) {
-  return { id: u.id, name: u.name, email: u.email, role: roleOf(u), createdAt: u.createdAt, coins: u.coins ?? START_COINS, slots: u.slots ?? 0, claimsToday: claimsToday(u) };
+  return { id: u.id, name: u.name, email: u.email, role: roleOf(u), xp: u.xp ?? 0, createdAt: u.createdAt, coins: u.coins ?? START_COINS, slots: u.slots ?? 0, claimsToday: claimsToday(u) };
 }
 function pubBot(b) {
   const w = workers.get(b.id);
@@ -169,7 +169,7 @@ app.post('/api/coins/claim', auth, (req, res) => {
   const c = u.claims && u.claims.day === today() ? u.claims : { day: today(), n: 0, last: 0 };
   if (c.n >= DAILY_MAX) return res.status(429).json({ error: 'Limite du jour atteinte. Reviens demain.' });
   if (Date.now() - c.last < COOLDOWN) return res.status(429).json({ error: 'Patiente quelques secondes avant de réessayer.' });
-  c.n += 1; c.last = Date.now(); u.claims = c; u.coins += CLAIM_GAIN;
+  c.n += 1; c.last = Date.now(); u.claims = c; u.coins += CLAIM_GAIN; u.xp = (u.xp ?? 0) + 10;
   saveUser(u);
   res.json({ ok: true, message: `+${CLAIM_GAIN} coins` });
 });
