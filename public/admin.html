@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZEPE TECH · Administration</title>
+<style>
+:root{--bg:#070707;--card:#121212;--line:#2b2414;--gold:#f2c14e;--gold2:#ffdf8a;--txt:#f5f1e8;--mut:#9b9484;--ok:#34d27b;--bad:#ef6a5b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(900px 400px at 80% -10%,#1d1606,transparent),var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.logo{font-weight:800;font-size:20px}.logo b{color:var(--gold)}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:9px 15px;font-weight:700}
+.gold{background:linear-gradient(90deg,var(--gold),var(--gold2));color:#1a1305}
+.line{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.danger{background:transparent;color:var(--bad);border:1px solid #4a2420}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+h1{font-size:24px;margin:20px 0 4px}.mut{color:var(--mut);font-size:14px;margin:0;word-break:break-all}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.pill.owner,.pill.admin,.pill.pairing,.pill.starting{color:var(--gold);border-color:#5a4513}.pill.online{color:var(--ok);border-color:#1f4d36}
+.acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.bot{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+#toast{position:fixed;left:16px;right:16px;top:12px;background:#1c1606;border:1px solid var(--gold);color:var(--gold2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="toast" role="status"></div>
+<header><div class="logo">ZEPE <b>TECH</b></div><button class="line" id="back">Retour</button></header>
+<h1>Administration</h1>
+<p class="mut" id="count">Chargement…</p>
+<div id="list"></div>
+<script src="/admin.js" defer></script>
+</body>
+</html>
