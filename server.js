@@ -30,6 +30,11 @@ const DAILY_MAX = 15;      // clics max par jour
 const COOLDOWN = 20000;    // attente entre deux clics (ms)
 const MAX_BOTS = 10;       // bots max par compte
 
+// Rôles : définis par e-mail dans les variables d'environnement de Render
+const OWNER_EMAIL = (process.env.OWNER_EMAIL || '').trim().toLowerCase();
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+const roleOf = u => (OWNER_EMAIL && u.email === OWNER_EMAIL ? 'owner' : ADMIN_EMAILS.includes(u.email) ? 'admin' : 'user');
+
 if (SECRET.length < 32) {
   console.error('SESSION_SECRET doit faire au moins 32 caractères.');
   process.exit(1);
@@ -90,7 +95,7 @@ function setSession(res, user) {
 const today = () => new Date().toISOString().slice(0, 10);
 const claimsToday = u => (u.claims && u.claims.day === today() ? u.claims.n : 0);
 function cleanUser(u) {
-  return { id: u.id, name: u.name, email: u.email, createdAt: u.createdAt, coins: u.coins ?? START_COINS, slots: u.slots ?? 0, claimsToday: claimsToday(u) };
+  return { id: u.id, name: u.name, email: u.email, role: roleOf(u), createdAt: u.createdAt, coins: u.coins ?? START_COINS, slots: u.slots ?? 0, claimsToday: claimsToday(u) };
 }
 function pubBot(b) {
   const w = workers.get(b.id);
@@ -243,6 +248,50 @@ app.delete('/api/bots/:id', auth, (req, res) => {
   if (!bot) return res.status(404).json({ error: 'Bot introuvable.' });
   stopWorker(bot.id);
   writeJson(BOTS_FILE, all.filter(b => b.id !== bot.id));
+  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
+  res.json({ ok: true, message: 'Bot supprimé.' });
+});
+
+// Administration (propriétaire et admins)
+function adminOnly(req, res, next) {
+  if (roleOf(req.user) === 'user') return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
+  next();
+}
+// Le propriétaire gère tout le monde ; un admin gère seulement les utilisateurs simples.
+const canManage = (actor, target) => roleOf(actor) === 'owner' || roleOf(target) === 'user';
+
+app.get('/api/admin/users', auth, adminOnly, (_req, res) => {
+  const allBots = bots();
+  res.json({ users: users().map(u => ({ ...cleanUser(u), slots: u.slots ?? 0, bots: allBots.filter(b => b.userId === u.id).map(pubBot) })) });
+});
+
+app.post('/api/admin/users/:id/coins', auth, adminOnly, (req, res) => {
+  const target = users().find(u => u.id === req.params.id);
+  const amount = Math.trunc(Number(req.body.amount));
+  if (!target) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+  if (!canManage(req.user, target)) return res.status(403).json({ error: 'Tu ne peux pas modifier ce compte.' });
+  if (!amount || Math.abs(amount) > 1000000) return res.status(400).json({ error: 'Montant invalide.' });
+  target.coins = Math.max(0, (target.coins ?? START_COINS) + amount);
+  saveUser(target);
+  res.json({ ok: true, message: `${target.name} a maintenant ${target.coins} coins.` });
+});
+
+function adminBot(req, res) {
+  const bot = bots().find(b => b.id === req.params.id);
+  const owner = bot && users().find(u => u.id === bot.userId);
+  if (!bot || !owner) { res.status(404).json({ error: 'Bot introuvable.' }); return null; }
+  if (!canManage(req.user, owner)) { res.status(403).json({ error: 'Tu ne peux pas gérer ce bot.' }); return null; }
+  return bot;
+}
+app.post('/api/admin/bots/:id/stop', auth, adminOnly, (req, res) => {
+  const bot = adminBot(req, res); if (!bot) return;
+  stopWorker(bot.id);
+  res.json({ ok: true, message: 'Bot arrêté.' });
+});
+app.delete('/api/admin/bots/:id', auth, adminOnly, (req, res) => {
+  const bot = adminBot(req, res); if (!bot) return;
+  stopWorker(bot.id);
+  writeJson(BOTS_FILE, bots().filter(b => b.id !== bot.id));
   fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
   res.json({ ok: true, message: 'Bot supprimé.' });
 });
