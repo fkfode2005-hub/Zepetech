@@ -23,12 +23,12 @@ const COOKIE_OPTS = { httpOnly: true, sameSite: 'strict', secure: process.env.NO
 const workers = new Map();
 
 // Réglages de l'économie (modifie ces nombres comme tu veux)
-const START_COINS = 100;   // coins offerts à l'inscription
-const SLOT_PRICE = 100;    // prix d'un slot en coins
-const CLAIM_GAIN = 5;      // coins gagnés par clic
-const DAILY_MAX = 15;      // clics max par jour
-const COOLDOWN = 20000;    // attente entre deux clics (ms)
-const MAX_BOTS = 10;       // bots max par compte
+const START_COINS = 100;
+const SLOT_PRICE = 100;
+const CLAIM_GAIN = 5;
+const DAILY_MAX = 15;
+const COOLDOWN = 20000;
+const MAX_BOTS = 10;
 
 // Rôles : définis par e-mail dans les variables d'environnement de Render
 const OWNER_EMAIL = 'fkfode2005@gmail.com';
@@ -199,40 +199,58 @@ app.post('/api/bots', auth, (req, res) => {
   const all = bots();
   if (all.filter(b => b.userId === req.user.id).length >= MAX_BOTS) return res.status(409).json({ error: `Limite de ${MAX_BOTS} bots atteinte.` });
   const phone = String(req.body.phone || '').replace(/\D/g, '');
-  const label = String(req.body.label || 'Mon bot').trim().slice(0, 40) || 'Mon bot';
+  const label = 'ZEPE MD';
   if (phone.length < 8 || phone.length > 15) return res.status(400).json({ error: 'Entre le numéro WhatsApp au format international, chiffres uniquement.' });
   const bot = { id: crypto.randomUUID(), userId: req.user.id, phone, label, createdAt: Date.now() };
   all.push(bot); writeJson(BOTS_FILE, all);
   res.json({ ok: true, bot: pubBot(bot) });
-});
-
-app.post('/api/bots/:id/start', auth, (req, res) => {
+});app.post('/api/bots/:id/start', auth, (req, res) => {
   const mine = bots().filter(b => b.userId === req.user.id);
   const bot = mine.find(b => b.id === req.params.id);
   if (!bot) return res.status(404).json({ error: 'Bot introuvable.' });
   if (workers.has(bot.id)) return res.status(409).json({ error: 'Ce bot est déjà lancé.' });
   if (mine.filter(b => workers.has(b.id)).length >= req.user.slots) return res.status(402).json({ error: 'Aucun slot libre. Achète un slot avec tes coins.' });
+
   const workerFile = path.join(__dirname, 'workers', 'whatsapp-worker.js');
   if (!fs.existsSync(workerFile)) return res.status(501).json({ error: "Le module WhatsApp n'est pas encore installé (workers/whatsapp-worker.js)." });
+
   const sessionDir = path.join(DATA_DIR, 'sessions', bot.id);
   fs.mkdirSync(sessionDir, { recursive: true, mode: 0o700 });
+
   const child = spawn(process.execPath, [workerFile, bot.phone, sessionDir], {
-    cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, NODE_ENV: 'production' }
+    cwd: __dirname,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, NODE_ENV: 'production' }
   });
+
   const record = { child, status: 'starting', pairingCode: null };
   workers.set(bot.id, record);
+
   child.stdout.on('data', chunk => {
     for (const line of chunk.toString().split(/\r?\n/).filter(Boolean)) {
       try {
         const msg = JSON.parse(line);
-        if (msg.type === 'pairing') { record.pairingCode = msg.code; record.status = 'pairing'; }
-        if (msg.type === 'status') { record.status = msg.status; if (msg.status === 'online') record.pairingCode = null; }
+        if (msg.type === 'pairing') {
+          record.pairingCode = msg.code;
+          record.status = 'pairing';
+        }
+        if (msg.type === 'status') {
+          record.status = msg.status;
+          if (msg.status === 'online') record.pairingCode = null;
+        }
       } catch {}
     }
   });
+
   child.stderr.resume();
-  child.on('exit', () => { if (workers.get(bot.id) === record) workers.delete(bot.id); });
-  res.json({ ok: true, message: 'Démarrage en cours. Le code de jumelage arrive dans quelques secondes.' });
+  child.on('exit', () => {
+    if (workers.get(bot.id) === record) workers.delete(bot.id);
+  });
+
+  res.json({
+    ok: true,
+    message: 'Démarrage en cours. Le code de jumelage arrive dans quelques secondes.'
+  });
 });
 
 app.post('/api/bots/:id/stop', auth, (req, res) => {
@@ -246,55 +264,110 @@ app.delete('/api/bots/:id', auth, (req, res) => {
   const all = bots();
   const bot = all.find(b => b.id === req.params.id && b.userId === req.user.id);
   if (!bot) return res.status(404).json({ error: 'Bot introuvable.' });
+
   stopWorker(bot.id);
   writeJson(BOTS_FILE, all.filter(b => b.id !== bot.id));
-  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
+  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), {
+    recursive: true,
+    force: true
+  });
+
   res.json({ ok: true, message: 'Bot supprimé.' });
 });
 
 // Administration (propriétaire et admins)
 function adminOnly(req, res, next) {
-  if (roleOf(req.user) === 'user') return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
+  if (roleOf(req.user) === 'user') {
+    return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
+  }
   next();
 }
+
 // Le propriétaire gère tout le monde ; un admin gère seulement les utilisateurs simples.
-const canManage = (actor, target) => roleOf(actor) === 'owner' || roleOf(target) === 'user';
+const canManage = (actor, target) =>
+  roleOf(actor) === 'owner' || roleOf(target) === 'user';
 
 app.get('/api/admin/users', auth, adminOnly, (_req, res) => {
   const allBots = bots();
-  res.json({ users: users().map(u => ({ ...cleanUser(u), slots: u.slots ?? 0, bots: allBots.filter(b => b.userId === u.id).map(pubBot) })) });
+
+  res.json({
+    users: users().map(u => ({
+      ...cleanUser(u),
+      slots: u.slots ?? 0,
+      bots: allBots.filter(b => b.userId === u.id).map(pubBot)
+    }))
+  });
 });
 
 app.post('/api/admin/users/:id/coins', auth, adminOnly, (req, res) => {
   const target = users().find(u => u.id === req.params.id);
   const amount = Math.trunc(Number(req.body.amount));
+
   if (!target) return res.status(404).json({ error: 'Utilisateur introuvable.' });
-  if (!canManage(req.user, target)) return res.status(403).json({ error: 'Tu ne peux pas modifier ce compte.' });
-  if (!amount || Math.abs(amount) > 1000000) return res.status(400).json({ error: 'Montant invalide.' });
+  if (!canManage(req.user, target)) {
+    return res.status(403).json({ error: 'Tu ne peux pas modifier ce compte.' });
+  }
+  if (!amount || Math.abs(amount) > 1000000) {
+    return res.status(400).json({ error: 'Montant invalide.' });
+  }
+
   target.coins = Math.max(0, (target.coins ?? START_COINS) + amount);
   saveUser(target);
-  res.json({ ok: true, message: `${target.name} a maintenant ${target.coins} coins.` });
+
+  res.json({
+    ok: true,
+    message: `${target.name} a maintenant ${target.coins} coins.`
+  });
 });
 
 function adminBot(req, res) {
   const bot = bots().find(b => b.id === req.params.id);
   const owner = bot && users().find(u => u.id === bot.userId);
-  if (!bot || !owner) { res.status(404).json({ error: 'Bot introuvable.' }); return null; }
-  if (!canManage(req.user, owner)) { res.status(403).json({ error: 'Tu ne peux pas gérer ce bot.' }); return null; }
+
+  if (!bot || !owner) {
+    res.status(404).json({ error: 'Bot introuvable.' });
+    return null;
+  }
+
+  if (!canManage(req.user, owner)) {
+    res.status(403).json({ error: 'Tu ne peux pas gérer ce bot.' });
+    return null;
+  }
+
   return bot;
 }
+
 app.post('/api/admin/bots/:id/stop', auth, adminOnly, (req, res) => {
-  const bot = adminBot(req, res); if (!bot) return;
+  const bot = adminBot(req, res);
+  if (!bot) return;
+
   stopWorker(bot.id);
   res.json({ ok: true, message: 'Bot arrêté.' });
 });
+
 app.delete('/api/admin/bots/:id', auth, adminOnly, (req, res) => {
-  const bot = adminBot(req, res); if (!bot) return;
+  const bot = adminBot(req, res);
+  if (!bot) return;
+
   stopWorker(bot.id);
-  writeJson(BOTS_FILE, bots().filter(b => b.id !== bot.id));
-  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
+
+  writeJson(
+    BOTS_FILE,
+    bots().filter(b => b.id !== bot.id)
+  );
+
+  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), {
+    recursive: true,
+    force: true
+  });
+
   res.json({ ok: true, message: 'Bot supprimé.' });
 });
 
-app.use('/api', (_req, res) => res.status(404).json({ error: 'Route API introuvable.' }));
-app.listen(PORT, '0.0.0.0', () => console.log(`ZEPE TECH prêt sur le port ${PORT}`));
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'Route API introuvable.' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`ZEPE TECH prêt sur le port ${PORT}`);
+});
