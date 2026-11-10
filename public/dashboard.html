@@ -3,98 +3,146 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ZEPE TECH · Tableau de bord</title>
+<title>ZEPE TECH · Dashboard</title>
 <style>
-:root{--bg:#070707;--card:#121212;--line:#2b2414;--gold:#f2c14e;--gold2:#ffdf8a;--txt:#f5f1e8;--mut:#9b9484;--ok:#34d27b;--bad:#ef6a5b}
+:root{--bg:#0c1010;--card:#161b19;--line:#27322c;--g:#22b573;--g2:#35d98f;--txt:#f1f5f2;--mut:#93a39a;--or:#f59a23;--bad:#ef6a5b}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(900px 400px at 80% -10%,#1d1606,transparent),var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 16px 96px}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
-.logo{font-weight:800;font-size:20px;letter-spacing:.5px}.logo b{color:var(--gold)}
+body{margin:0;background:radial-gradient(800px 380px at 20% 0,#12241b,transparent),var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 14px 110px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:10px;align-items:center}.brand b{display:block;letter-spacing:.5px}.brand small{color:var(--mut);font-size:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1c6d4a,var(--g2));display:grid;place-items:center;font-weight:800;color:#06120c;font-size:20px}
+.hicons{display:flex;gap:8px;align-items:center}
+.ic{background:#1b211f;border:0;border-radius:14px;width:40px;height:40px;font-size:18px;padding:0;color:var(--txt)}
 button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:11px 18px;font-weight:700}
-.gold{background:linear-gradient(90deg,var(--gold),var(--gold2));color:#1a1305}
-.line{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.g{background:var(--g);color:#05140c}.w{background:#f3f6f4;color:#0b1410}.o{background:linear-gradient(90deg,#f5a623,#e8741c);color:#1b0e02}
+.ol{background:#10241b;color:var(--g2);border:1px solid #1d5a3d}.line{background:transparent;color:var(--txt);border:1px solid var(--line)}
 .danger{background:transparent;color:var(--bad);border:1px solid #4a2420}
-button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-section{margin-top:18px}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
+.hidden,.off{display:none!important}
+section{margin-top:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px}
-.who{display:flex;gap:14px;align-items:center}
-.av{width:62px;height:62px;border-radius:50%;background:#3a2c0c;border:3px solid var(--gold);display:grid;place-items:center;font-size:26px;font-weight:800;color:var(--gold2)}
-.who h1{margin:0;font-size:24px}.mut{color:var(--mut);font-size:14px;margin:2px 0 0;word-break:break-all}
-.coins{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.big{font-size:40px;font-weight:800;line-height:1;color:var(--gold2)}
+.av{width:84px;height:84px;border-radius:50%;background:#4a2c22;border:4px solid var(--g);display:grid;place-items:center;font-size:36px;font-weight:700;position:relative;flex:none}
+.av i{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--g);color:#05140c;font-style:normal;font-size:14px;display:grid;place-items:center;border:2px solid var(--bg)}
+.av.sm{width:40px;height:40px;font-size:18px;border-width:2px}
+.who{display:flex;gap:16px;align-items:center;margin-top:18px}.who h1{margin:0;font-size:28px}
+.mut{color:var(--mut);font-size:14px;margin:2px 0 0;word-break:break-all}
+.lvl{display:flex;justify-content:space-between;margin-top:18px;font-weight:700}.lvl span:last-child{color:var(--mut);font-weight:400}
+.bar{height:10px;background:#1e2622;border-radius:9px;margin-top:8px;overflow:hidden}.bar div{height:100%;width:0;background:var(--g);border-radius:9px}
+.coins{display:flex;align-items:center;gap:14px}.coins .big{font-size:40px;font-weight:800;line-height:1}
+.coins .r{margin-left:auto;text-align:right}
 .chips{display:flex;gap:10px;overflow-x:auto;padding:2px 0}.chips button{white-space:nowrap}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
-.stats b{display:block;font-size:28px}.stats span{color:var(--mut);font-size:13px}
-.row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
-h2{margin:0;font-size:22px}
-label{display:block;margin:10px 0 6px;color:var(--mut);font-size:14px}
-input{width:100%;background:#0b0b0b;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit}
-.hidden{display:none}
-.bot{border-top:1px solid var(--line);padding:14px 0}.bot:first-child{border-top:0}
+.stats b{display:block;font-size:26px}.stats span{color:var(--mut);font-size:13px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#6b7771;margin-right:6px}.dot.on{background:var(--g)}
+.info{display:flex;gap:14px;align-items:flex-start}.info .t{width:48px;height:48px;border-radius:14px;background:#17392a;display:grid;place-items:center;font-size:22px;flex:none}
+.info .t.b{background:#17263d}.info h3{margin:0 0 4px;font-size:18px}.info p{margin:0;color:var(--mut)}
+.full{width:100%;margin-top:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h2{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}
+.badge{font-size:13px;padding:2px 10px;border-radius:99px;background:#17392a;border:1px solid #1d5a3d;color:var(--g2)}.badge.or{background:#3a2608;border-color:#7a4d10;color:#f7b24a}
+label{display:block;margin:12px 0 6px;color:var(--mut);font-size:14px}
+input{width:100%;background:#0a0e0d;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit}
+.bot{border-top:1px solid var(--line);padding:14px 0;margin-top:12px}
 .pill{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
-.pill.online{color:var(--ok);border-color:#1f4d36}.pill.pairing,.pill.starting{color:var(--gold);border-color:#5a4513}
-.code{margin:10px 0;padding:12px;border-radius:14px;background:#1a1405;border:1px dashed var(--gold);text-align:center}
-.code b{display:block;font-size:30px;letter-spacing:6px;color:var(--gold2)}
+.pill.online{color:var(--g2);border-color:#1d5a3d}.pill.pairing,.pill.starting{color:#f7b24a;border-color:#7a4d10}
+.code{margin:10px 0;padding:12px;border-radius:14px;background:#10241b;border:1px dashed var(--g);text-align:center}
+.code b{display:block;font-size:30px;letter-spacing:6px;color:var(--g2)}
 .acts{display:flex;gap:8px;margin-top:10px}
-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-around;background:#0e0e0eee;border:1px solid var(--line);border-radius:22px;padding:6px}
-nav a{color:var(--mut);text-decoration:none;font-size:13px;padding:10px 12px;border-radius:16px}
-nav a:first-child{color:var(--gold);background:#1c1606}
-#toast{position:fixed;left:16px;right:16px;top:12px;background:#1c1606;border:1px solid var(--gold);color:var(--gold2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none;transition:opacity .2s}
-#toast.show{opacity:1}
-@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+details summary{cursor:pointer;font-size:24px;font-weight:700;list-style:none}details p{margin:10px 0 0;color:var(--mut)}
+nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;background:#0d1210f2;border:1px solid var(--line);border-radius:26px;padding:6px}
+nav button{flex:1;background:transparent;color:var(--mut);border-radius:20px;padding:8px 2px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
+#toast{position:fixed;left:16px;right:16px;top:12px;z-index:5;background:#14382a;border:1px solid var(--g);color:var(--g2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none}#toast.show{opacity:1}
 </style>
 </head>
 <body>
 <div id="toast" role="status"></div>
-<header><div class="logo">ZEPE <b>TECH</b></div><button class="line" id="logout">Déconnexion</button></header>
+<header>
+  <div class="brand"><div class="mark">Z</div><div><b>ZEPE TECH</b><small>Dashboard</small></div></div>
+  <div class="hicons"><button class="ic" data-soon aria-label="Classement">🏆</button><button class="ic" data-soon aria-label="Notifications">🔔</button><div class="av sm" id="hav">?</div><button class="ic" data-soon aria-label="Messages">💬</button></div>
+</header>
 
-<section class="card who" id="home">
-  <div class="av" id="avatar">?</div>
-  <div><h1 id="name">Chargement…</h1><p class="mut" id="email"></p><p class="mut" id="since"></p></div>
+<section data-v="home">
+  <div class="who"><div class="av" id="avatar">?<i>✓</i></div><div><h1 id="name">Chargement…</h1><p class="mut" id="email"></p><p class="mut" id="since"></p></div></div>
+  <div class="lvl"><span id="lvl">Niveau 1</span><span id="xp">0/1000 XP</span></div>
+  <div class="bar"><div id="xpbar"></div></div>
 </section>
 
-<section class="card coins">
+<section class="card coins" data-v="home">
+  <div style="font-size:44px">💰</div>
   <div><div class="big" id="coins">–</div><div class="mut">ZepeCoins</div></div>
-  <div style="text-align:right"><button class="gold" id="claim">Obtenir des coins</button><div class="mut" id="claims" style="margin-top:6px"></div></div>
+  <div class="r"><button class="g" id="claim">+ Obtenir des coins</button><div class="mut" id="claims" style="margin-top:6px"></div></div>
 </section>
 
-<section class="chips">
-  <button class="gold" id="showAdd">Ajouter un bot</button>
-  <button class="line" id="showTransfer">Transférer des coins</button>
+<section class="chips" data-v="home bots">
+  <button class="w" id="showAdd">+ Ajouter un bot</button>
+  <button class="ol" id="showHelp">🎮 Aide au déploiement</button>
+  <button class="line" id="showTransfer">✈ Transférer des coins</button>
 </section>
 
-<section class="card hidden" id="addBox">
+<section class="card off" id="helpBox">
+  <h2>Aide au déploiement</h2>
+  <p class="mut">1. Ajoute un bot avec ton numéro WhatsApp.<br>2. Achète un slot avec tes coins.<br>3. Touche Démarrer sur ton bot.<br>4. Dans WhatsApp : Appareils connectés, Connecter avec un numéro, puis saisis le code affiché.</p>
+</section>
+<section class="card off" id="addBox">
   <h2>Nouveau bot</h2>
   <label for="label">Nom du bot</label><input id="label" value="Mon bot" maxlength="40">
   <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
   <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
-  <button class="gold" id="createBot">Créer le bot</button>
+  <button class="g full" id="createBot">Créer le bot</button>
 </section>
-
-<section class="card hidden" id="transferBox">
+<section class="card off" id="transferBox">
   <h2>Transférer des coins</h2>
   <label for="tmail">E-mail du destinataire</label><input id="tmail" type="email">
   <label for="tamount">Montant</label><input id="tamount" inputmode="numeric">
-  <p></p><button class="gold" id="sendCoins">Envoyer</button>
+  <button class="g full" id="sendCoins">Envoyer</button>
 </section>
 
-<section class="card stats">
-  <div><b id="sOn">0</b><span>en ligne</span></div>
-  <div><b id="sOff">0</b><span>hors ligne</span></div>
-  <div><b id="sSlots">0</b><span>slots libres</span></div>
+<section class="card stats" data-v="home">
+  <div><b><i class="dot on"></i><span id="sOn">0</span></b><span>en ligne</span></div>
+  <div><b><i class="dot"></i><span id="sOff">0</span></b><span>hors ligne</span></div>
+  <div><b>🎟 <span id="sSlots">0</span></b><span>slots actifs</span></div>
 </section>
 
-<section class="card" id="bots">
-  <div class="row"><h2>Mes bots <span class="mut" id="botCount"></span></h2></div>
+<section class="card info off" id="firstBot" data-v="home">
+  <div class="t">🚀</div>
+  <div style="flex:1"><h3>Connectez votre premier bot</h3><p>Entrez votre numéro, saisissez le code de jumelage dans WhatsApp, et votre bot est en ligne en moins d'une minute.</p><button class="g full" id="firstAdd">Ajouter un bot</button></div>
+</section>
+<section class="card info off" id="needSlot" data-v="home">
+  <div class="t b">ℹ</div>
+  <div style="flex:1"><h3>Un slot est nécessaire</h3><p>Il faut un slot actif pour faire tourner un bot.</p><button class="line full" id="needBuy">Acheter un slot</button></div>
+</section>
+
+<section class="card" id="bots" data-v="home bots">
+  <div class="row"><h2>Mes bots <span class="badge" id="botCount">0</span></h2><button class="g" id="addTop">+ Ajouter</button></div>
   <div id="botList"></div>
 </section>
 
-<section class="card" id="slots">
-  <div class="row"><h2>Mes slots</h2><button class="gold" id="buySlot">Acheter</button></div>
-  <p class="mut" id="slotInfo"></p>
+<section class="card" id="slots" data-v="home bots">
+  <div class="row"><h2>Mes Slots <span class="badge or" id="slotCount">0</span></h2><button class="o" id="buySlot">Acheter</button></div>
+  <p class="mut" id="slotInfo" style="margin-top:12px"></p>
 </section>
 
-<nav><a href="#home">Accueil</a><a href="#bots">Mes bots</a><a href="#slots">Slots</a></nav>
+<section class="card" data-v="home">
+  <details><summary>Statistiques</summary><p id="statsText"></p></details>
+</section>
+
+<section class="card info" data-v="games"><div class="t">🎮</div><div><h3>Jeux</h3><p>Bientôt disponible.</p></div></section>
+<section class="card info" data-v="messages"><div class="t b">💬</div><div><h3>Messages</h3><p>Bientôt disponible.</p></div></section>
+<section class="card" data-v="settings">
+  <h2>Réglages</h2>
+  <p class="mut" id="setInfo" style="margin:10px 0 14px"></p>
+  <div id="setLinks"></div>
+  <button class="danger full" id="logout">Déconnexion</button>
+</section>
+
+<nav>
+  <button data-go="home" class="on"><span>🏠</span>Accueil</button>
+  <button data-go="bots"><span>🤖</span>Mes bots</button>
+  <button data-go="games"><span>🎮</span>Jeux</button>
+  <button data-go="messages"><span>💬</span>Messages</button>
+  <button data-go="settings"><span>⚙️</span>Réglages</button>
+</nav>
 <script src="/dash.js" defer></script>
 </body>
 </html>
