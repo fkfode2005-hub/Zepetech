@@ -52,6 +52,8 @@ async function load() {
   const o = await api('/overview');
   cfg = o.config;
   const u = o.user;
+  const nav = document.querySelector('nav');
+  if (u.role !== 'user' && !nav.querySelector('[href="/admin.html"]')) nav.append(el('a', { href: '/admin.html' }, 'Admin'));
   $('name').textContent = u.name;
   $('avatar').textContent = u.name.trim().charAt(0).toUpperCase();
   $('email').textContent = u.email;
