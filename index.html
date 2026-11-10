@@ -1,10 +1,101 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080808"><meta name="description" content="ZEPE TECH — plateforme de gestion de bots WhatsApp.">
-<title>ZEPE TECH — WhatsApp Automation</title><link rel="stylesheet" href="/style.css"></head>
-<body><header><a class="brand" href="/" aria-label="ZEPE TECH accueil">✦ ZEPE <span>TECH</span></a><nav><a href="#features">Fonctionnalités</a><button id="openLogin" class="ghost">Connexion</button><button id="openRegister" class="primary">Créer un compte</button></nav></header>
-<main><section class="hero"><div class="pill">✦ Plateforme WhatsApp nouvelle génération</div><h1>Le contrôle de tes bots.<br><span>Une expérience premium.</span></h1><p>Connecte et pilote tes bots WhatsApp depuis un tableau de bord sécurisé, pensé pour être simple sur mobile et puissant côté serveur.</p><div class="actions"><button class="primary" id="heroRegister">Commencer ↗</button><a class="ghost linkbtn" href="#features">Explorer la plateforme</a></div><div class="trustline"><span>Interface mobile</span><span>Sessions séparées</span><span>Contrôle depuis le dashboard</span></div><div class="powered">ZEPE TECH · Automatisation maîtrisée</div></section>
-<section id="features" class="features"><article><b>01 / CONNEXION</b><h3>Jumelage WhatsApp</h3><p>Demande un code de jumelage pour lier un numéro que tu possèdes ou que tu es autorisé à gérer.</p></article><article><b>02 / PILOTAGE</b><h3>Un espace central</h3><p>Consulte le statut du bot et démarre ou arrête son processus depuis ton espace personnel.</p></article><article><b>03 / PROTECTION</b><h3>Accès séparés</h3><p>Les comptes et les dossiers de session sont séparés. Ne partage jamais les codes ni les identifiants de session.</p></article></section>
-<footer>© <span id="year"></span> ZEPE TECH · Plateforme indépendante de gestion de bots</footer></main>
+<meta name="theme-color" content="#0c1010">
+<meta name="description" content="ZEPE TECH : connecte ton numéro WhatsApp, lance ton bot ZEPE MD et pilote-le depuis un tableau de bord simple et sécurisé.">
+<meta property="og:type" content="website"><meta property="og:title" content="ZEPE TECH · Plateforme de bots WhatsApp">
+<meta property="og:description" content="Connecte ton numéro avec un code de jumelage et pilote ton bot depuis un seul tableau de bord.">
+<title>ZEPE TECH · Plateforme de bots WhatsApp</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header><a class="brand" href="/" aria-label="ZEPE TECH accueil"><i class="mark">Z</i> ZEPE <span>TECH</span></a>
+<nav><a href="#how">Comment ça marche</a><a href="#features">Fonctionnalités</a><a href="#security">Sécurité</a><a href="#faq">FAQ</a><button id="openLogin" class="ghost">Connexion</button><button id="openRegister" class="primary">Créer un compte</button></nav><button id="menuBtn" class="menubtn" aria-label="Menu" aria-expanded="false">☰</button></header>
+
+<main>
+<section class="hero">
+  <div class="herotext">
+    <div class="pill"><i class="dot"></i>Plateforme de gestion de bots WhatsApp</div>
+    <h1>Ton WhatsApp répond <em>tout seul.</em></h1>
+    <p>Connecte ton numéro avec un code de jumelage, lance ton bot ZEPE MD et pilote-le depuis un tableau de bord simple, pensé pour le mobile.</p>
+    <div class="actions"><button class="primary big" id="heroRegister">Créer mon bot gratuitement <i class="arr">→</i></button><button class="linkb" data-open="login">J'ai déjà un compte →</button></div>
+    <div class="stats"><div><b id="stOnline">–</b><span><i class="dot"></i>bots en ligne</span></div><div><b id="stBots">–</b><span>bots créés</span></div><div><b id="stUsers">–</b><span>comptes</span></div></div>
+  </div>
+  <div class="stage" aria-hidden="true">
+    <svg class="orbit" viewBox="0 0 150 360"><path d="M90 20C20 120 10 250 70 340" fill="none" stroke="#22b573" stroke-opacity=".55" stroke-width="1.5"/><circle cx="38" cy="215" r="6" fill="#22b573"/><circle cx="82" cy="318" r="7" fill="#22b573"/><circle cx="30" cy="345" r="3" fill="#22b573" fill-opacity=".6"/></svg>
+    <div class="float"><span>⚡</span><div><b>Réponse automatique</b><small>sans intervention</small></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phonehead"><div><b>Mon groupe 🔥</b><small>bot actif</small></div>
+        <span class="pico"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="12" height="10" rx="2"/><path d="m15 11 6-3v8l-6-3"/></svg><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></span></div>
+      <div class="chat">
+        <div class="msg in">!menu<small>21:42</small></div>
+        <div class="msg bot"><b>ZEPE MD</b>Catégorie : Jeux<br>✦ !quiz<br>✦ !morpion<small>21:42</small></div>
+        <div class="msg warn">Message supprimé<br>⚠ Liens interdits dans ce groupe. Avertissement 1/3.<small>21:43</small></div>
+      </div>
+    </div>
+    <p class="phonefoot">Exemple de conversation</p>
+  </div>
+</section>
+
+<section id="how" class="block">
+  <span class="eyebrow">Comment ça marche</span>
+  <h2>Trois étapes pour être en ligne.</h2>
+  <p class="lead">De la création du compte au premier bot actif, sans configuration technique.</p>
+  <div class="steps">
+    <article><b>1</b><h3>Crée ton compte</h3><p>L'inscription est gratuite et te donne 100 ZepeCoins pour démarrer.</p></article>
+    <article><b>2</b><h3>Saisis ton numéro</h3><p>Entre ton numéro WhatsApp et lance le déploiement. Un slot héberge ton bot.</p></article>
+    <article><b>3</b><h3>Entre le code</h3><p>Saisis le code de jumelage dans WhatsApp. Ton bot est actif et tu le pilotes depuis le tableau de bord.</p></article>
+  </div>
+</section>
+
+<section id="features" class="block">
+  <span class="eyebrow">Fonctionnalités</span>
+  <h2>L'essentiel, sans le superflu.</h2>
+  <p class="lead">Tout ce qu'il faut pour lancer et suivre tes bots WhatsApp.</p>
+  <div class="featgrid">
+    <article class="wide"><span class="ico"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><h3>Jumelage par code</h3><p>Pas de QR code à scanner sur un autre écran : tu saisis un code sur ton téléphone pour lier ton numéro.</p>
+      <div class="code" aria-hidden="true"><i>Z</i><i>E</i><i>P</i><i>E</i><i>C</i><i>O</i><i>D</i><i>E</i></div>
+      <small>WhatsApp › Appareils connectés › Connecter avec un numéro</small></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg></span><h3>Plusieurs bots</h3><p>Ajoute plusieurs bots à ton compte, chacun avec sa session séparée.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><h3>Suivi en direct</h3><p>Le statut de chaque bot, en ligne ou hors ligne, visible d'un coup d'œil.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/></svg></span><h3>ZepeCoins et slots</h3><p>Récupère des coins chaque jour et utilise-les pour acheter des slots.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><path d="m5 8 4 4-4 4M12 16h7"/></svg></span><h3>Commandes intégrées</h3><p>Une vingtaine de commandes : outils, jeux, et modération de groupe avec anti-lien.</p></article>
+  </div>
+</section>
+
+<section id="security" class="block">
+  <span class="eyebrow">Sécurité</span>
+  <h2>Ton compte, bien protégé.</h2>
+  <p class="lead">Des protections de base, appliquées dès l'inscription.</p>
+  <div class="secgrid">
+    <article><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg></span><h3>Mots de passe protégés</h3><p>Ils sont hachés avec bcrypt et ne sont jamais stockés en clair.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><h3>Sessions sécurisées</h3><p>Ta connexion passe par un cookie protégé qui expire au bout de 7 jours.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg></span><h3>Tentatives limitées</h3><p>Les essais répétés de connexion ou d'inscription sont bloqués.</p></article>
+    <article><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z"/></svg></span><h3>Sessions séparées</h3><p>Chaque bot a son propre dossier de session WhatsApp, isolé des autres.</p></article>
+  </div>
+</section>
+
+<section id="faq" class="block faq">
+  <span class="eyebrow">FAQ</span>
+  <h2>Questions fréquentes.</h2>
+  <details><summary>Faut-il installer quelque chose ?</summary><p>Non. Tout se passe depuis ton navigateur : tu crées ton compte, tu saisis ton numéro et tu entres le code de jumelage dans WhatsApp.</p></details>
+  <details><summary>Quels numéros puis-je connecter ?</summary><p>Uniquement un numéro que tu possèdes ou que tu es autorisé à gérer.</p></details>
+  <details><summary>C'est quoi un slot ?</summary><p>Un slot permet de faire tourner un bot. Tu en obtiens avec tes ZepeCoins, et un slot héberge un bot actif à la fois.</p></details>
+  <details><summary>Combien de bots puis-je avoir ?</summary><p>Jusqu'à 10 bots par compte. Le nombre de bots actifs en même temps dépend de tes slots.</p></details>
+</section>
+
+<section class="block cta">
+  <h2>Lance ton bot dès aujourd'hui.</h2>
+  <p class="lead">Inscription gratuite, quelques minutes pour être en ligne, et tu gardes la main sur tout.</p>
+  <div class="actions mid"><button class="primary" data-open="register">Créer mon compte</button><button class="ghost" data-open="login">Déjà membre ? Se connecter</button></div>
+</section>
+</main>
+
+<footer>
+  <div class="footgrid">
+    <div><a class="brand" href="/"><i class="mark">Z</i> ZEPE <span>TECH</span></a><p>Plateforme indépendante de gestion de bots WhatsApp.</p></div>
+    <div class="footlinks"><a href="#how">Comment ça marche</a><a href="#features">Fonctionnalités</a><a href="#security">Sécurité</a><a href="#faq">FAQ</a></div>
+  </div>
+  <p class="legal">© <span id="year"></span> ZEPE TECH. Service indépendant, non affilié à WhatsApp ni à Meta. WhatsApp est une marque de Meta Platforms, Inc.</p>
+</footer>
+
 <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="formTitle"><div class="panel"><button type="button" id="closeModal" class="close" aria-label="Fermer">✕</button><h2 id="formTitle">Créer un compte</h2><p class="small">Rejoins ton espace ZEPE TECH.</p><form id="authForm"><label>Nom<input name="name" autocomplete="name" minlength="2" maxlength="50" placeholder="Ton nom"></label><label>E-mail<input name="email" type="email" autocomplete="email" placeholder="toi@exemple.com" required></label><label>Mot de passe<input name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="10 caractères minimum" required></label><button type="submit" class="primary full" id="submitAuth">Créer mon compte</button><p id="formMessage" role="status" aria-live="polite"></p><button type="button" id="switchMode" class="textbutton">J’ai déjà un compte</button></form></div></div>
-<script src="/app.js" defer></script></body></html>
+<script src="/app.js" defer></script><script src="/home.js" defer></script></body></html>
