@@ -17,18 +17,19 @@ const SECRET = process.env.SESSION_SECRET || '';
 const DATA_DIR = path.resolve(process.env.DATA_DIR || './data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const BOTS_FILE = path.join(DATA_DIR, 'bots.json');
+const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
 const COOKIE = 'zepe_session';
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const COOKIE_OPTS = { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', path: '/' };
 const workers = new Map();
 
 // Réglages de l'économie (modifie ces nombres comme tu veux)
-const START_COINS = 100;
-const SLOT_PRICE = 100;
-const CLAIM_GAIN = 5;
-const DAILY_MAX = 15;
-const COOLDOWN = 20000;
-const MAX_BOTS = 10;
+const START_COINS = 100;   // coins offerts à l'inscription
+const SLOT_PRICE = 100;    // prix d'un slot en coins
+const CLAIM_GAIN = 5;      // coins gagnés par clic
+const DAILY_MAX = 15;      // clics max par jour
+const COOLDOWN = 20000;    // attente entre deux clics (ms)
+const MAX_BOTS = 10;       // bots max par compte
 
 // Rôles : définis par e-mail dans les variables d'environnement de Render
 const OWNER_EMAIL = 'fkfode2005@gmail.com';
@@ -160,7 +161,7 @@ app.get('/api/me', (req, res) => { const u = currentUser(req); res.json({ user: 
 // Tout le tableau de bord en une seule requête
 app.get('/api/overview', auth, (req, res) => {
   const mine = bots().filter(b => b.userId === req.user.id).map(pubBot);
-  res.json({ user: cleanUser(req.user), bots: mine, config: { slotPrice: SLOT_PRICE, dailyMax: DAILY_MAX, claimGain: CLAIM_GAIN, maxBots: MAX_BOTS } });
+  res.json({ user: cleanUser(req.user), bots: mine, config: { slotPrice: SLOT_PRICE, dailyMax: DAILY_MAX, claimGain: CLAIM_GAIN, maxBots: MAX_BOTS }, dmUnread: readDm().filter(m => m.to === req.user.id && !m.read).length });
 });
 
 // Coins
@@ -204,53 +205,35 @@ app.post('/api/bots', auth, (req, res) => {
   const bot = { id: crypto.randomUUID(), userId: req.user.id, phone, label, createdAt: Date.now() };
   all.push(bot); writeJson(BOTS_FILE, all);
   res.json({ ok: true, bot: pubBot(bot) });
-});app.post('/api/bots/:id/start', auth, (req, res) => {
+});
+
+app.post('/api/bots/:id/start', auth, (req, res) => {
   const mine = bots().filter(b => b.userId === req.user.id);
   const bot = mine.find(b => b.id === req.params.id);
   if (!bot) return res.status(404).json({ error: 'Bot introuvable.' });
   if (workers.has(bot.id)) return res.status(409).json({ error: 'Ce bot est déjà lancé.' });
   if (mine.filter(b => workers.has(b.id)).length >= req.user.slots) return res.status(402).json({ error: 'Aucun slot libre. Achète un slot avec tes coins.' });
-
   const workerFile = path.join(__dirname, 'workers', 'whatsapp-worker.js');
   if (!fs.existsSync(workerFile)) return res.status(501).json({ error: "Le module WhatsApp n'est pas encore installé (workers/whatsapp-worker.js)." });
-
   const sessionDir = path.join(DATA_DIR, 'sessions', bot.id);
   fs.mkdirSync(sessionDir, { recursive: true, mode: 0o700 });
-
   const child = spawn(process.execPath, [workerFile, bot.phone, sessionDir], {
-    cwd: __dirname,
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, NODE_ENV: 'production' }
+    cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, NODE_ENV: 'production' }
   });
-
   const record = { child, status: 'starting', pairingCode: null };
   workers.set(bot.id, record);
-
   child.stdout.on('data', chunk => {
     for (const line of chunk.toString().split(/\r?\n/).filter(Boolean)) {
       try {
         const msg = JSON.parse(line);
-        if (msg.type === 'pairing') {
-          record.pairingCode = msg.code;
-          record.status = 'pairing';
-        }
-        if (msg.type === 'status') {
-          record.status = msg.status;
-          if (msg.status === 'online') record.pairingCode = null;
-        }
+        if (msg.type === 'pairing') { record.pairingCode = msg.code; record.status = 'pairing'; }
+        if (msg.type === 'status') { record.status = msg.status; if (msg.status === 'online') record.pairingCode = null; }
       } catch {}
     }
   });
-
   child.stderr.resume();
-  child.on('exit', () => {
-    if (workers.get(bot.id) === record) workers.delete(bot.id);
-  });
-
-  res.json({
-    ok: true,
-    message: 'Démarrage en cours. Le code de jumelage arrive dans quelques secondes.'
-  });
+  child.on('exit', () => { if (workers.get(bot.id) === record) workers.delete(bot.id); });
+  res.json({ ok: true, message: 'Démarrage en cours. Le code de jumelage arrive dans quelques secondes.' });
 });
 
 app.post('/api/bots/:id/stop', auth, (req, res) => {
@@ -264,110 +247,143 @@ app.delete('/api/bots/:id', auth, (req, res) => {
   const all = bots();
   const bot = all.find(b => b.id === req.params.id && b.userId === req.user.id);
   if (!bot) return res.status(404).json({ error: 'Bot introuvable.' });
-
   stopWorker(bot.id);
   writeJson(BOTS_FILE, all.filter(b => b.id !== bot.id));
-  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), {
-    recursive: true,
-    force: true
-  });
-
+  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
   res.json({ ok: true, message: 'Bot supprimé.' });
+});
+
+// Chiffres publics pour la page d'accueil (aucune donnée personnelle)
+app.get('/api/stats', (_req, res) => {
+  res.json({ users: users().length, bots: bots().length, online: [...workers.values()].filter(w => w.status === 'online').length });
 });
 
 // Administration (propriétaire et admins)
 function adminOnly(req, res, next) {
-  if (roleOf(req.user) === 'user') {
-    return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
-  }
+  if (roleOf(req.user) === 'user') return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
   next();
 }
-
 // Le propriétaire gère tout le monde ; un admin gère seulement les utilisateurs simples.
-const canManage = (actor, target) =>
-  roleOf(actor) === 'owner' || roleOf(target) === 'user';
+const canManage = (actor, target) => roleOf(actor) === 'owner' || roleOf(target) === 'user';
 
 app.get('/api/admin/users', auth, adminOnly, (_req, res) => {
   const allBots = bots();
-
-  res.json({
-    users: users().map(u => ({
-      ...cleanUser(u),
-      slots: u.slots ?? 0,
-      bots: allBots.filter(b => b.userId === u.id).map(pubBot)
-    }))
-  });
+  res.json({ users: users().map(u => ({ ...cleanUser(u), slots: u.slots ?? 0, bots: allBots.filter(b => b.userId === u.id).map(pubBot) })) });
 });
 
 app.post('/api/admin/users/:id/coins', auth, adminOnly, (req, res) => {
   const target = users().find(u => u.id === req.params.id);
   const amount = Math.trunc(Number(req.body.amount));
-
   if (!target) return res.status(404).json({ error: 'Utilisateur introuvable.' });
-  if (!canManage(req.user, target)) {
-    return res.status(403).json({ error: 'Tu ne peux pas modifier ce compte.' });
-  }
-  if (!amount || Math.abs(amount) > 1000000) {
-    return res.status(400).json({ error: 'Montant invalide.' });
-  }
-
+  if (!canManage(req.user, target)) return res.status(403).json({ error: 'Tu ne peux pas modifier ce compte.' });
+  if (!amount || Math.abs(amount) > 1000000) return res.status(400).json({ error: 'Montant invalide.' });
   target.coins = Math.max(0, (target.coins ?? START_COINS) + amount);
   saveUser(target);
-
-  res.json({
-    ok: true,
-    message: `${target.name} a maintenant ${target.coins} coins.`
-  });
+  res.json({ ok: true, message: `${target.name} a maintenant ${target.coins} coins.` });
 });
 
 function adminBot(req, res) {
   const bot = bots().find(b => b.id === req.params.id);
   const owner = bot && users().find(u => u.id === bot.userId);
-
-  if (!bot || !owner) {
-    res.status(404).json({ error: 'Bot introuvable.' });
-    return null;
-  }
-
-  if (!canManage(req.user, owner)) {
-    res.status(403).json({ error: 'Tu ne peux pas gérer ce bot.' });
-    return null;
-  }
-
+  if (!bot || !owner) { res.status(404).json({ error: 'Bot introuvable.' }); return null; }
+  if (!canManage(req.user, owner)) { res.status(403).json({ error: 'Tu ne peux pas gérer ce bot.' }); return null; }
   return bot;
 }
-
 app.post('/api/admin/bots/:id/stop', auth, adminOnly, (req, res) => {
-  const bot = adminBot(req, res);
-  if (!bot) return;
-
+  const bot = adminBot(req, res); if (!bot) return;
   stopWorker(bot.id);
   res.json({ ok: true, message: 'Bot arrêté.' });
 });
-
 app.delete('/api/admin/bots/:id', auth, adminOnly, (req, res) => {
-  const bot = adminBot(req, res);
-  if (!bot) return;
-
+  const bot = adminBot(req, res); if (!bot) return;
   stopWorker(bot.id);
-
-  writeJson(
-    BOTS_FILE,
-    bots().filter(b => b.id !== bot.id)
-  );
-
-  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), {
-    recursive: true,
-    force: true
-  });
-
+  writeJson(BOTS_FILE, bots().filter(b => b.id !== bot.id));
+  fs.rmSync(path.join(DATA_DIR, 'sessions', bot.id), { recursive: true, force: true });
   res.json({ ok: true, message: 'Bot supprimé.' });
 });
 
-app.use('/api', (_req, res) => {
-  res.status(404).json({ error: 'Route API introuvable.' });
+// Messages (discussion ouverte à tous les membres)
+const readMessages = () => readJson(MESSAGES_FILE, []);
+const lastMsg = new Map();
+app.get('/api/messages', auth, (_req, res) => {
+  const byId = new Map(users().map(u => [u.id, u]));
+  const list = readMessages().slice(-60).map(m => ({
+    id: m.id, userId: m.userId, name: m.name, text: m.text, at: m.at,
+    role: byId.has(m.userId) ? roleOf(byId.get(m.userId)) : 'user'
+  }));
+  res.json({ messages: list });
+});
+app.post('/api/messages', auth, (req, res) => {
+  const text = String(req.body.text || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  if (!text) return res.status(400).json({ error: 'Écris un message.' });
+  const now = Date.now();
+  if (now - (lastMsg.get(req.user.id) || 0) < 2000) return res.status(429).json({ error: 'Doucement, attends un instant.' });
+  lastMsg.set(req.user.id, now);
+  const all = readMessages();
+  all.push({ id: crypto.randomUUID(), userId: req.user.id, name: req.user.name, text, at: now });
+  writeJson(MESSAGES_FILE, all.slice(-200));
+  res.json({ ok: true });
+});
+app.delete('/api/admin/messages/:id', auth, adminOnly, (req, res) => {
+  const all = readMessages();
+  const msg = all.find(m => m.id === req.params.id);
+  if (!msg) return res.status(404).json({ error: 'Message introuvable.' });
+  const author = users().find(u => u.id === msg.userId);
+  if (author && !canManage(req.user, author)) return res.status(403).json({ error: 'Tu ne peux pas supprimer ce message.' });
+  writeJson(MESSAGES_FILE, all.filter(m => m.id !== msg.id));
+  res.json({ ok: true, message: 'Message supprimé.' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`ZEPE TECH prêt sur le port ${PORT}`);
+// Messages privés (entre deux membres)
+const DM_FILE = path.join(DATA_DIR, 'dm.json');
+const readDm = () => readJson(DM_FILE, []);
+const lastDm = new Map();
+app.get('/api/members', auth, (req, res) => {
+  res.json({ members: users().filter(u => u.id !== req.user.id).map(u => ({ id: u.id, name: u.name, role: roleOf(u) })).slice(0, 500) });
 });
+app.get('/api/dm', auth, (req, res) => {
+  const me = req.user.id;
+  const byId = new Map(users().map(u => [u.id, u]));
+  const convs = new Map();
+  for (const m of readDm()) {
+    if (m.from !== me && m.to !== me) continue;
+    const other = m.from === me ? m.to : m.from;
+    const u = byId.get(other);
+    if (!u) continue;
+    const c = convs.get(other) || { userId: other, name: u.name, unread: 0 };
+    c.last = { text: m.text, at: m.at, mine: m.from === me };
+    if (m.to === me && !m.read) c.unread += 1;
+    convs.set(other, c);
+  }
+  res.json({ conversations: [...convs.values()].sort((a, b) => b.last.at - a.last.at) });
+});
+app.get('/api/dm/:uid', auth, (req, res) => {
+  const me = req.user.id, other = req.params.uid;
+  const target = users().find(u => u.id === other);
+  if (!target) return res.status(404).json({ error: 'Membre introuvable.' });
+  const all = readDm();
+  const thread = all.filter(m => (m.from === me && m.to === other) || (m.from === other && m.to === me));
+  let changed = false;
+  for (const m of thread) if (m.to === me && !m.read) { m.read = true; changed = true; }
+  if (changed) writeJson(DM_FILE, all);
+  res.json({
+    with: { id: target.id, name: target.name, role: roleOf(target) },
+    messages: thread.slice(-100).map(m => ({ id: m.id, mine: m.from === me, text: m.text, at: m.at }))
+  });
+});
+app.post('/api/dm/:uid', auth, (req, res) => {
+  const me = req.user.id, other = req.params.uid;
+  if (other === me || !users().some(u => u.id === other)) return res.status(404).json({ error: 'Membre introuvable.' });
+  const text = String(req.body.text || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  if (!text) return res.status(400).json({ error: 'Écris un message.' });
+  const now = Date.now();
+  if (now - (lastDm.get(me) || 0) < 1000) return res.status(429).json({ error: 'Doucement, attends un instant.' });
+  lastDm.set(me, now);
+  const all = readDm();
+  all.push({ id: crypto.randomUUID(), from: me, to: other, text, at: now, read: false });
+  writeJson(DM_FILE, all.slice(-3000));
+  res.json({ ok: true });
+});
+
+app.use('/api', (_req, res) => res.status(404).json({ error: 'Route API introuvable.' }));
+app.listen(PORT, '0.0.0.0', () => console.log(`ZEPE TECH prêt sur le port ${PORT}`));
