@@ -210,3 +210,22 @@
   });
   load();
 })();
+
+/* ---- Application installable (PWA) ----
+   Enregistre le service worker et affiche le bouton « Installer l'app » quand le navigateur le permet. */
+(function(){
+  if("serviceWorker" in navigator){
+    window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});
+  }
+  var btn=document.getElementById("installApp"),deferred=null;
+  if(!btn)return;
+  var standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone;
+  if(standalone)return;
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();deferred=e;btn.classList.remove("off");});
+  btn.addEventListener("click",function(){
+    if(!deferred)return;
+    deferred.prompt();
+    deferred.userChoice.then(function(){deferred=null;btn.classList.add("off");});
+  });
+  window.addEventListener("appinstalled",function(){btn.classList.add("off");});
+})();
