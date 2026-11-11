@@ -109,28 +109,95 @@ cmd('choisir', 'outils', 'Choisit au hasard. Ex : !choisir pizza, riz, pâtes', 
   const opts = args.join(' ').split(/,| ou /).map(s => s.trim()).filter(Boolean);
   return opts.length < 2 ? 'Donne au moins 2 choix séparés par des virgules.' : 'Je choisis : ' + pick(opts);
 });
-cmd('menu', 'outils', 'Affiche le menu. Ex : !menu fun, !menu 3, !menu tout', ({ jid, args }) => {
-  const px = prefixes.get(jid) || PREFIX;
-  const visible = Object.entries(commands).filter(([, c]) => !c.hidden);
-  const keys = Object.keys(CATS);
-  const alias = { outil: 'outils', jeu: 'jeux', reglage: 'reglages', settings: 'reglages', group: 'groupe' };
+
+// ---------- Menu professionnel ----------
+const MENU_SEP = '━━━━━━━━━━━━━━━━━━━━━━';
+const MENU_BOTTOM = '┗━━━━━━━━━━━━━━━━━━';
+const MENU_MAX = 3500;
+const MENU_LABELS = { outils: 'Outils', fun: 'Divertissement', jeux: 'Jeux', groupe: 'Groupe', reglages: 'Paramètres' };
+
+function menuUptime(ms) {
+  const t = Math.floor(ms / 1000);
+  const d = Math.floor(t / 86400), h = Math.floor((t % 86400) / 3600), mi = Math.floor((t % 3600) / 60), s = t % 60;
+  const p = [];
+  if (d) p.push(`${d}j`);
+  if (d || h) p.push(`${h}h`);
+  p.push(`${String(mi).padStart(2, '0')}m`);
+  if (!d) p.push(`${String(s).padStart(2, '0')}s`);
+  return p.join(' ');
+}
+
+function menuHeader(px, total) {
+  const gb = b => (b / 1024 ** 3).toFixed(1);
+  const row = (k, v) => `${k.padEnd(13, ' ')}: ${v}`;
+  return [
+    BOT_NAME.toUpperCase(),
+    'Assistant WhatsApp',
+    MENU_SEP,
+    '',
+    'INFORMATIONS',
+    row('Propriétaire', '+224 610 888 616'),
+    row('Préfixe', px || 'aucun'),
+    row('Langue', 'Français'),
+    row('Commandes', total),
+    row('Uptime', menuUptime(Date.now() - startedAt)),
+    row('Mémoire', `${gb(os.totalmem() - os.freemem())} / ${gb(os.totalmem())} Go`),
+    row('Système', `${os.platform()} ${os.arch()}`),
+    row('Node.js', process.version),
+    '',
+    MENU_SEP
+  ].join('\n');
+}
+
+function menuBlocks(title, names, px) {
+  const blocks = [];
+  let cur = [`┏━━ ${title.toUpperCase()} (${names.length})`];
+  let len = cur[0].length;
+  for (const n of names) {
+    const line = `┃ ${px}${n}`;
+    if (len + line.length + MENU_BOTTOM.length > MENU_MAX) {
+      cur.push(MENU_BOTTOM);
+      blocks.push(cur.join('\n'));
+      cur = [`┏━━ ${title.toUpperCase()} (suite)`];
+      len = cur[0].length;
+    }
+    cur.push(line);
+    len += line.length + 1;
+  }
+  cur.push(MENU_BOTTOM);
+  blocks.push(cur.join('\n'));
+  return blocks;
+}
+
+cmd('menu', 'outils', 'Affiche le menu. Ex : !menu, !menu jeux', async ({ sock, jid, m, args }) => {
+  const px = noPrefixSet.has(jid) ? '' : (prefixes.get(jid) || PREFIX);
+  const alias = { outil: 'outils', jeu: 'jeux', reglage: 'reglages', parametres: 'reglages', settings: 'reglages', group: 'groupe', divertissement: 'fun' };
+  const keys = Object.keys(MENU_LABELS);
   let q = norm(args[0] || '').replace(/[^a-z0-9]/g, '');
   if (/^[1-9]$/.test(q) && keys[+q - 1]) q = keys[+q - 1];
-  const cat = alias[q] || q;
-  const names = c => visible.filter(([, x]) => x.cat === c).map(([n]) => px + n);
-  const section = c => `*${CATS[c]}* (${names(c).length})\n${names(c).join('  ')}`;
-  const foot = `Détails d'une commande : ${px}aide <commande>`;
-  if (q === 'tout' || q === 'all') return [`*${BOT_NAME}* — ${visible.length} commandes`, '', ...keys.flatMap(c => [section(c), '']), foot].join('\n');
-  if (CATS[cat]) return [section(cat), '', `Retour au menu : ${px}menu`, foot].join('\n');
-  return [
-    `*${BOT_NAME}* — ${visible.length} commandes`,
-    `Préfixe : ${px}`,
-    '',
-    ...keys.map((c, i) => `${i + 1}. ${CATS[c]} (${names(c).length}) : ${px}menu ${c}`),
-    '',
-    `Tout afficher : ${px}menu tout`,
-    foot
-  ].join('\n');
+  const only = MENU_LABELS[alias[q] || q] ? (alias[q] || q) : null;
+
+  const visible = Object.entries(commands).filter(([, c]) => !c.hidden);
+  const blocks = [];
+  for (const key of only ? [only] : keys) {
+    const names = visible.filter(([, c]) => c.cat === key).map(([n]) => n).sort((a, b) => a.localeCompare(b, 'fr'));
+    if (names.length) blocks.push(...menuBlocks(MENU_LABELS[key], names, px));
+  }
+  const footer = [MENU_SEP, `Détails : ${px}aide <commande>`, `Catégorie : ${px}menu <nom>`, 'Zepe Tech Empire'].join('\n');
+
+  const messages = [];
+  let current = menuHeader(px, visible.length);
+  for (const b of blocks) {
+    if (current.length + b.length + 2 > MENU_MAX) { messages.push(current); current = b; }
+    else current += '\n\n' + b;
+  }
+  messages.push(current + '\n\n' + footer);
+
+  for (let i = 0; i < messages.length; i++) {
+    const sent = await sock.sendMessage(jid, { text: messages[i] }, i === 0 ? { quoted: m } : {});
+    if (sent?.key) rememberSent(jid, sent.key);
+  }
+  return null;
 });
 cmd('aide', 'outils', 'Explique une commande. Ex : !aide calc', ({ args }) => {
   const n = (args[0] || '').replace(PREFIX, '').toLowerCase();
@@ -1465,201 +1532,4 @@ async function handle(sock, m) {
   if (isGroup && !m.key.fromMe && antilink.has(jid) && LINK.test(text)) {
     const meta = await sock.groupMetadata(jid);
     if (!isAdminIn(meta, sender)) {
-      try { await sock.sendMessage(jid, { delete: m.key }); } catch {}
-      const k = jid + ':' + sender;
-      const n = (warns.get(k) || 0) + 1; warns.set(k, n);
-      const tag = tagOf(sender);
-      if (n >= 3) {
-        warns.delete(k);
-        await sock.sendMessage(jid, { text: `${tag} a reçu 3 avertissements et est retiré.`, mentions: [sender] });
-        try { await sock.groupParticipantsUpdate(jid, [sender], 'remove'); } catch {}
-      } else {
-        await sock.sendMessage(jid, { text: `⚠️ ${tag}, les liens sont interdits dans ce groupe. Avertissement ${n}/3.`, mentions: [sender] });
-      }
-      return;
-    }
-  }
-
-  // Mots interdits
-  if (isGroup && !m.key.fromMe && forbidden.get(jid)?.size) {
-    const nt = norm(text);
-    if ([...forbidden.get(jid)].some(w => nt.includes(w))) {
-      const meta = await sock.groupMetadata(jid);
-      if (!isAdminIn(meta, sender)) {
-        try { await sock.sendMessage(jid, { delete: m.key }); } catch {}
-        await sock.sendMessage(jid, { text: `⚠️ ${tagOf(sender)}, ce mot est interdit dans ce groupe.`, mentions: [sender] });
-        return;
-      }
-    }
-  }
-
-  // Anti-spam : trop de messages en peu de temps
-  if (isGroup && !m.key.fromMe && antispamSet.has(jid)) {
-    const fk = jid + ':' + sender;
-    const now0 = Date.now();
-    let f = floodTrack.get(fk);
-    if (!f || now0 - f.start > 8000) f = { n: 0, start: now0 };
-    f.n++; floodTrack.set(fk, f);
-    if (f.n > 6) {
-      try { await sock.sendMessage(jid, { delete: m.key }); } catch {}
-      if (f.n === 7) await sock.sendMessage(jid, { text: `⚠️ ${tagOf(sender)}, ralentis un peu (anti-spam).`, mentions: [sender] });
-      return;
-    }
-  }
-
-  // Anti-tag : mentions en masse par un non-admin
-  if (isGroup && !m.key.fromMe && antitagSet.has(jid)) {
-    const mentions = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
-    if (mentions.length > 5) {
-      const meta = await sock.groupMetadata(jid);
-      if (!isAdminIn(meta, sender)) { try { await sock.sendMessage(jid, { delete: m.key }); } catch {} return; }
-    }
-  }
-
-  // Mode privé : seul le propriétaire peut utiliser les commandes ici
-  if (!m.key.fromMe && privateChats.has(jid) && isCommandAttempt) return;
-
-  if (!isCommandAttempt) {
-    // Répondeur automatique (hors commandes)
-    if (!m.key.fromMe && awayMsg.has(jid)) {
-      const last = awayCooldown.get(jid + ':' + sender) || 0;
-      if (Date.now() - last > 3600000) {
-        awayCooldown.set(jid + ':' + sender, Date.now());
-        await sock.sendMessage(jid, { text: awayMsg.get(jid) }, { quoted: m });
-      }
-    }
-    return;
-  }
-
-  const raw = text.startsWith(px) ? text.slice(px.length) : text;
-  const [name, ...args] = raw.split(/\s+/);
-  const c = commands[name.toLowerCase()];
-  if (!c) return;
-  if (bannedUsers.has(sender) && !m.key.fromMe) return;
-  const now = Date.now();
-  if (now - (lastCmd.get(sender) || 0) < 1500) return; // anti-spam commandes
-  lastCmd.set(sender, now);
-  if (autoreactOn) sock.sendMessage(jid, { react: { text: pick(['✅', '⚡', '🔥', '👍']), key: m.key } }).catch(() => {});
-
-  const ctx = { sock, m, jid, sender, args, isGroup };
-  let reply;
-  try {
-    if (c.group && !isGroup) reply = 'Cette commande marche seulement dans un groupe.';
-    else if (c.admin) {
-      const meta = await sock.groupMetadata(jid);
-      const isAdmin = isAdminIn(meta, sender);
-      reply = (isAdmin || sudoUsers.has(sender) || m.key.fromMe) ? await c.run(ctx) : 'Commande réservée aux admins du groupe.';
-    } else reply = await c.run(ctx);
-  } catch (e) {
-    console.error('Erreur commande :', e?.message);
-    reply = 'Une erreur est survenue.';
-  }
-
-  const uc = usageCount.get(jid) || new Map();
-  uc.set(sender, (uc.get(sender) || 0) + 1);
-  usageCount.set(jid, uc);
-
-  if (reply) {
-    const sent = await sock.sendMessage(jid, typeof reply === 'string' ? { text: reply } : reply, { quoted: m });
-    if (sent?.key) {
-      rememberSent(jid, sent.key);
-      if (autodeleteSet.has(jid)) setTimeout(() => sock.sendMessage(jid, { delete: sent.key }).catch(() => {}), 30000);
-    }
-  }
-}
-
-// ---------- Connexion WhatsApp ----------
-async function start() {
-  const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-  const { version } = await fetchLatestBaileysVersion();
-  const sock = makeWASocket({
-    version, auth: state, logger, printQRInTerminal: false,
-    browser: Browsers.ubuntu('Chrome'), markOnlineOnConnect: false
-  });
-  currentSock = sock;
-  sock.ev.on('creds.update', saveCreds);
-
-  if (!sock.authState.creds.registered) {
-    setTimeout(async () => {
-      try {
-        const code = await sock.requestPairingCode(phone, PAIRING_CODE);
-        send({ type: 'pairing', code });
-      } catch (e) {
-        console.error('Impossible de demander le code :', e?.message);
-        send({ type: 'status', status: 'stopped' });
-        process.exit(1);
-      }
-    }, 3000);
-  }
-
-  sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
-    if (connection === 'open') send({ type: 'status', status: 'online' });
-    if (connection === 'close') {
-      const reason = lastDisconnect?.error?.output?.statusCode;
-      if (reason === DisconnectReason.loggedOut) { send({ type: 'status', status: 'stopped' }); process.exit(0); }
-      send({ type: 'status', status: 'starting' });
-      setTimeout(start, 3000);
-    }
-  });
-
-  // Anti-appel : rejette les appels entrants quand !anticall on
-  sock.ev.on('call', async calls => {
-    if (!anticallOn) return;
-    for (const call of calls) {
-      if (call.status !== 'offer') continue;
-      try {
-        await sock.rejectCall(call.id, call.from);
-        const last = callWarned.get(call.from) || 0;
-        if (Date.now() - last > 60000) {
-          callWarned.set(call.from, Date.now());
-          await sock.sendMessage(call.chatId || call.from, { text: '📵 Les appels ne sont pas acceptés. Envoie un message écrit, merci.' });
-        }
-      } catch (e) { console.error('Erreur anti-appel :', e?.message); }
-    }
-  });
-
-  // Messages de bienvenue / au revoir
-  sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
-    try {
-      if (action !== 'add' && action !== 'remove') return;
-      const set = action === 'add' ? welcomeSet : goodbyeSet;
-      if (!set.has(id)) return;
-      const ids = participants.map(p => (typeof p === 'string' ? p : p.id || p.phoneNumber)).filter(Boolean);
-      if (!ids.length) return;
-      const meta = await sock.groupMetadata(id).catch(() => null);
-      const list = ids.map(tagOf).join(' ');
-      const text = action === 'add'
-        ? `👋 Bienvenue ${list}${meta ? ' dans *' + meta.subject + '*' : ''} !`
-        : `👋 ${list} a quitté le groupe. À bientôt !`;
-      await sock.sendMessage(id, { text, mentions: ids });
-    } catch (e) { console.error('Erreur bienvenue/au revoir :', e?.message); }
-  });
-
-  // Anti-promotion / anti-rétrogradation
-  sock.ev.on('group-participants.update', async ({ id, participants, action, author }) => {
-    try {
-      if (action !== 'promote' && action !== 'demote') return;
-      if (!(action === 'promote' ? antipromoteSet : antidemoteSet).has(id)) return;
-      const meId = (sock.user?.id || '').split(':')[0].split('@')[0];
-      if (!author || author.split('@')[0].split(':')[0] === meId || sudoUsers.has(author)) return;
-      const ids = participants.map(p => (typeof p === 'string' ? p : p.id)).filter(Boolean);
-      await sock.groupParticipantsUpdate(id, ids, action === 'promote' ? 'demote' : 'promote');
-    } catch (e) { console.error('Erreur anti-promotion :', e?.message); }
-  });
-
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
-    for (const m of messages) {
-      if (!m.message) continue;
-      const ts = Number(m.messageTimestamp?.toNumber?.() ?? m.messageTimestamp ?? 0);
-      if (Date.now() / 1000 - ts > 60) continue; // ignore les vieux messages
-      try { await handle(sock, m); } catch (e) { console.error('Erreur message :', e?.message); }
-    }
-  });
-}
-
-process.on('SIGTERM', () => process.exit(0));
-start().catch(e => { console.error(e); process.exit(1); });
-
-
-
+      try { await sock
