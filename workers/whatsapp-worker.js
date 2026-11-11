@@ -109,21 +109,28 @@ cmd('choisir', 'outils', 'Choisit au hasard. Ex : !choisir pizza, riz, pâtes', 
   const opts = args.join(' ').split(/,| ou /).map(s => s.trim()).filter(Boolean);
   return opts.length < 2 ? 'Donne au moins 2 choix séparés par des virgules.' : 'Je choisis : ' + pick(opts);
 });
-cmd('menu', 'outils', 'Affiche le menu. Ex : !menu fun, !menu groupe, !menu tout', ({ args }) => {
+cmd('menu', 'outils', 'Affiche le menu. Ex : !menu fun, !menu 3, !menu tout', ({ jid, args }) => {
+  const px = prefixes.get(jid) || PREFIX;
   const visible = Object.entries(commands).filter(([, c]) => !c.hidden);
-  const q = norm(args[0] || '').replace(/^(\u{1F6E0}|\W)+/u, '');
+  const keys = Object.keys(CATS);
   const alias = { outil: 'outils', jeu: 'jeux', reglage: 'reglages', settings: 'reglages', group: 'groupe' };
+  let q = norm(args[0] || '').replace(/[^a-z0-9]/g, '');
+  if (/^[1-9]$/.test(q) && keys[+q - 1]) q = keys[+q - 1];
   const cat = alias[q] || q;
-  const block = c => {
-    const names = visible.filter(([, x]) => x.cat === c).map(([n]) => PREFIX + n);
-    return `*${CATS[c]}* (${names.length})\n${names.join('  ')}`;
-  };
-  if (q === 'tout' || q === 'all') return [`*${BOT_NAME}*`, '', ...Object.keys(CATS).map(block).flatMap(b => [b, ''])].join('\n').trim();
-  if (CATS[cat]) return `*${BOT_NAME}*\n\n${block(cat)}\n\nDétails : ${PREFIX}aide <commande>`;
-  const lines = [`*${BOT_NAME}* — ${visible.length} commandes`, ''];
-  for (const [c, title] of Object.entries(CATS)) lines.push(`${title} : ${PREFIX}menu ${c}  (${visible.filter(([, x]) => x.cat === c).length})`);
-  lines.push('', `Tout afficher : ${PREFIX}menu tout`, `Détails : ${PREFIX}aide <commande>`);
-  return lines.join('\n');
+  const names = c => visible.filter(([, x]) => x.cat === c).map(([n]) => px + n);
+  const section = c => `*${CATS[c]}* (${names(c).length})\n${names(c).join('  ')}`;
+  const foot = `Détails d'une commande : ${px}aide <commande>`;
+  if (q === 'tout' || q === 'all') return [`*${BOT_NAME}* — ${visible.length} commandes`, '', ...keys.flatMap(c => [section(c), '']), foot].join('\n');
+  if (CATS[cat]) return [section(cat), '', `Retour au menu : ${px}menu`, foot].join('\n');
+  return [
+    `*${BOT_NAME}* — ${visible.length} commandes`,
+    `Préfixe : ${px}`,
+    '',
+    ...keys.map((c, i) => `${i + 1}. ${CATS[c]} (${names(c).length}) : ${px}menu ${c}`),
+    '',
+    `Tout afficher : ${px}menu tout`,
+    foot
+  ].join('\n');
 });
 cmd('aide', 'outils', 'Explique une commande. Ex : !aide calc', ({ args }) => {
   const n = (args[0] || '').replace(PREFIX, '').toLowerCase();
@@ -1512,147 +1519,4 @@ async function handle(sock, m) {
     }
   }
 
-  // Mode privé : seul le propriétaire peut utiliser les commandes ici
-  if (!m.key.fromMe && privateChats.has(jid) && isCommandAttempt) return;
-
-  if (!isCommandAttempt) {
-    // Répondeur automatique (hors commandes)
-    if (!m.key.fromMe && awayMsg.has(jid)) {
-      const last = awayCooldown.get(jid + ':' + sender) || 0;
-      if (Date.now() - last > 3600000) {
-        awayCooldown.set(jid + ':' + sender, Date.now());
-        await sock.sendMessage(jid, { text: awayMsg.get(jid) }, { quoted: m });
-      }
-    }
-    return;
-  }
-
-  const raw = text.startsWith(px) ? text.slice(px.length) : text;
-  const [name, ...args] = raw.split(/\s+/);
-  const c = commands[name.toLowerCase()];
-  if (!c) return;
-  if (bannedUsers.has(sender) && !m.key.fromMe) return;
-  const now = Date.now();
-  if (now - (lastCmd.get(sender) || 0) < 1500) return; // anti-spam commandes
-  lastCmd.set(sender, now);
-  if (autoreactOn) sock.sendMessage(jid, { react: { text: pick(['✅', '⚡', '🔥', '👍']), key: m.key } }).catch(() => {});
-
-  const ctx = { sock, m, jid, sender, args, isGroup };
-  let reply;
-  try {
-    if (c.group && !isGroup) reply = 'Cette commande marche seulement dans un groupe.';
-    else if (c.admin) {
-      const meta = await sock.groupMetadata(jid);
-      const isAdmin = isAdminIn(meta, sender);
-      reply = (isAdmin || sudoUsers.has(sender) || m.key.fromMe) ? await c.run(ctx) : 'Commande réservée aux admins du groupe.';
-    } else reply = await c.run(ctx);
-  } catch (e) {
-    console.error('Erreur commande :', e?.message);
-    reply = 'Une erreur est survenue.';
-  }
-
-  const uc = usageCount.get(jid) || new Map();
-  uc.set(sender, (uc.get(sender) || 0) + 1);
-  usageCount.set(jid, uc);
-
-  if (reply) {
-    const sent = await sock.sendMessage(jid, typeof reply === 'string' ? { text: reply } : reply, { quoted: m });
-    if (sent?.key) {
-      rememberSent(jid, sent.key);
-      if (autodeleteSet.has(jid)) setTimeout(() => sock.sendMessage(jid, { delete: sent.key }).catch(() => {}), 30000);
-    }
-  }
-}
-
-// ---------- Connexion WhatsApp ----------
-async function start() {
-  const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-  const { version } = await fetchLatestBaileysVersion();
-  const sock = makeWASocket({
-    version, auth: state, logger, printQRInTerminal: false,
-    browser: Browsers.ubuntu('Chrome'), markOnlineOnConnect: false
-  });
-  currentSock = sock;
-  sock.ev.on('creds.update', saveCreds);
-
-  if (!sock.authState.creds.registered) {
-    setTimeout(async () => {
-      try {
-        const code = await sock.requestPairingCode(phone, PAIRING_CODE);
-        send({ type: 'pairing', code });
-      } catch (e) {
-        console.error('Impossible de demander le code :', e?.message);
-        send({ type: 'status', status: 'stopped' });
-        process.exit(1);
-      }
-    }, 3000);
-  }
-
-  sock.ev.on('connection.update', ({ connection, lastDisconnect }) => {
-    if (connection === 'open') send({ type: 'status', status: 'online' });
-    if (connection === 'close') {
-      const reason = lastDisconnect?.error?.output?.statusCode;
-      if (reason === DisconnectReason.loggedOut) { send({ type: 'status', status: 'stopped' }); process.exit(0); }
-      send({ type: 'status', status: 'starting' });
-      setTimeout(start, 3000);
-    }
-  });
-
-  // Anti-appel : rejette les appels entrants quand !anticall on
-  sock.ev.on('call', async calls => {
-    if (!anticallOn) return;
-    for (const call of calls) {
-      if (call.status !== 'offer') continue;
-      try {
-        await sock.rejectCall(call.id, call.from);
-        const last = callWarned.get(call.from) || 0;
-        if (Date.now() - last > 60000) {
-          callWarned.set(call.from, Date.now());
-          await sock.sendMessage(call.chatId || call.from, { text: '📵 Les appels ne sont pas acceptés. Envoie un message écrit, merci.' });
-        }
-      } catch (e) { console.error('Erreur anti-appel :', e?.message); }
-    }
-  });
-
-  // Messages de bienvenue / au revoir
-  sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
-    try {
-      if (action !== 'add' && action !== 'remove') return;
-      const set = action === 'add' ? welcomeSet : goodbyeSet;
-      if (!set.has(id)) return;
-      const ids = participants.map(p => (typeof p === 'string' ? p : p.id || p.phoneNumber)).filter(Boolean);
-      if (!ids.length) return;
-      const meta = await sock.groupMetadata(id).catch(() => null);
-      const list = ids.map(tagOf).join(' ');
-      const text = action === 'add'
-        ? `👋 Bienvenue ${list}${meta ? ' dans *' + meta.subject + '*' : ''} !`
-        : `👋 ${list} a quitté le groupe. À bientôt !`;
-      await sock.sendMessage(id, { text, mentions: ids });
-    } catch (e) { console.error('Erreur bienvenue/au revoir :', e?.message); }
-  });
-
-  // Anti-promotion / anti-rétrogradation
-  sock.ev.on('group-participants.update', async ({ id, participants, action, author }) => {
-    try {
-      if (action !== 'promote' && action !== 'demote') return;
-      if (!(action === 'promote' ? antipromoteSet : antidemoteSet).has(id)) return;
-      const meId = (sock.user?.id || '').split(':')[0].split('@')[0];
-      if (!author || author.split('@')[0].split(':')[0] === meId || sudoUsers.has(author)) return;
-      const ids = participants.map(p => (typeof p === 'string' ? p : p.id)).filter(Boolean);
-      await sock.groupParticipantsUpdate(id, ids, action === 'promote' ? 'demote' : 'promote');
-    } catch (e) { console.error('Erreur anti-promotion :', e?.message); }
-  });
-
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
-    for (const m of messages) {
-      if (!m.message) continue;
-      const ts = Number(m.messageTimestamp?.toNumber?.() ?? m.messageTimestamp ?? 0);
-      if (Date.now() / 1000 - ts > 60) continue; // ignore les vieux messages
-      try { await handle(sock, m); } catch (e) { console.error('Erreur message :', e?.message); }
-    }
-  });
-}
-
-process.on('SIGTERM', () => process.exit(0));
-start().catch(e => { console.error(e); process.exit(1); });
+  // Mode privé : seul le propriétaire peut utiliser les comm
