@@ -116,6 +116,13 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 .act{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px;border-radius:16px;background:#1b2420}
 .act .ai{width:40px;height:40px;border-radius:12px;background:#14382a;display:grid;place-items:center;flex:none}
 .act .at{flex:1;min-width:0;word-break:break-word}.act .tm{color:var(--mut);font-size:13px;white-space:nowrap}
+.keycard{border-top:3px solid var(--g)}
+.keyrow{display:flex;gap:8px;align-items:center}.keyrow input{flex:1;min-width:0}
+code{background:#10241b;color:var(--g2);padding:1px 6px;border-radius:6px;font-size:13px}
+.warn{margin-top:14px;padding:12px 14px;border-radius:14px;background:#2a2410;border:1px solid #5a4614;color:#f3e3b5;font-size:14px}
+.codebox{margin-top:14px;padding:14px;border-radius:16px;background:#101513;border:1px solid var(--line)}
+.codebox small{color:var(--mut);font-weight:700;letter-spacing:.5px}
+.codebox pre{margin:10px 0 0;white-space:pre-wrap;word-break:break-all;color:var(--g2);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
 .commlink{align-items:center;text-decoration:none;color:inherit;border-top:3px solid var(--g)}
 .promo{background:linear-gradient(180deg,#2a2410,var(--card));border-color:#5a4614}
 .price b{font-size:22px}.price .amt{text-align:right}.price .amt b{font-size:28px;color:#f7b24a}
@@ -242,6 +249,41 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
     <div style="flex:1"><h3>Communauté</h3><p>Rejoignez-nous sur WhatsApp</p></div>
     <span aria-hidden="true" style="font-size:22px;color:var(--mut)">›</span>
   </a>
+</section>
+
+<section data-v="home" id="advHead">
+  <p class="mut" style="margin:22px 0 4px;letter-spacing:.5px">Outils avancés</p>
+  <h2 style="font-size:26px">Hébergement et intégrations</h2>
+  <p class="mut" style="margin-top:8px">Publiez votre propre serveur ou pilotez vos bots depuis une application externe.</p>
+</section>
+
+<section class="card" data-v="home" id="mySrv">
+  <div class="row">
+    <div><h2>🖥 Mes serveurs</h2><small style="color:var(--g2);letter-spacing:.5px">HÉBERGEMENT &amp; NŒUDS</small></div>
+    <button class="g" type="button" id="srvAdd">+ Ajouter un serveur</button>
+  </div>
+  <form id="srvForm" class="off">
+    <label for="srvName">Nom du serveur</label><input id="srvName" maxlength="40" autocomplete="off">
+    <label for="srvHost">Adresse (IP ou URL)</label><input id="srvHost" maxlength="120" autocomplete="off" placeholder="https://mon-serveur.exemple.com">
+    <button class="g full" type="submit">Enregistrer</button>
+  </form>
+  <div id="srvMine"></div>
+</section>
+
+<section class="card keycard" data-v="home" id="keyCard">
+  <h2>🔑 Clé API</h2><small style="color:var(--g2);letter-spacing:.5px">INTÉGRATION EXTERNE</small>
+  <p class="mut" style="margin-top:12px">Utilise ta clé API pour interagir avec tes bots depuis une application externe, via l'en-tête <code>x-api-key</code>.</p>
+  <label for="apiKey">VOTRE CLÉ API</label>
+  <div class="keyrow">
+    <input id="apiKey" type="text" readonly autocomplete="off" placeholder="Aucune clé pour le moment">
+    <button class="ic" type="button" id="keyEye" aria-label="Afficher ou masquer la clé">👁</button>
+    <button class="g" type="button" id="keyCopy">Copier</button>
+  </div>
+  <button class="g full" type="button" id="keyGet">🔑 Obtenir ma clé</button>
+  <button class="line full off" type="button" id="keyRenew">🔄 Renouveler la clé</button>
+  <div class="warn">⚠ Renouveler ta clé <b>révoque immédiatement</b> l'ancienne. Toutes tes intégrations devront être mises à jour.</div>
+  <p class="mut" style="margin-top:10px">Pour ta sécurité, la clé complète n'est affichée qu'une seule fois, à sa création.</p>
+  <div class="codebox"><small>EXEMPLE D'UTILISATION</small><pre id="keyEx"></pre></div>
 </section>
 
 <section class="card info" data-v="games"><div class="t">🎮</div><div><h3>Jeux</h3><p>Bientôt disponible.</p></div></section>
@@ -462,6 +504,71 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
     });
   }).catch(function(){});
   $('promoBuy').addEventListener('click',function(){var b=$('showPremium');if(b)b.click();});
+})();
+</script>
+<script>
+/* Clé API et Mes serveurs.
+   Routes attendues côté serveur (à écrire) :
+   GET  /api/key         -> {exists:true|false}
+   POST /api/key         -> {key}   (crée la clé, affichée une seule fois ; stocker seulement son hash)
+   POST /api/key/renew   -> {key}   (révoque l'ancienne)
+   GET  /api/my-servers  -> [{name, host, online}]
+   POST /api/my-servers  {name, host} -> serveur ajouté */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  function say(t){var el=$('toast');if(!el)return;el.textContent=t;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},3000);}
+  function api(u,m,b){
+    return fetch(u,{method:m||'GET',credentials:'same-origin',headers:b?{'Content-Type':'application/json'}:{},body:b?JSON.stringify(b):undefined})
+      .then(function(r){return r.ok?r.json():Promise.reject();});
+  }
+  /* ---- Clé API ---- */
+  var kv='',exists=false,inp=$('apiKey');
+  $('keyEx').textContent='curl -H "x-api-key: VOTRE_CLÉ" \\\n  '+location.origin+'/api/bots';
+  function ui(){
+    inp.value=kv||(exists?'••••••••••••••••':'');
+    inp.type=kv?'password':'text';
+    $('keyGet').classList.toggle('off',exists||!!kv);
+    $('keyRenew').classList.toggle('off',!(exists||kv));
+  }
+  function created(d){if(!d||!d.key)throw 0;kv=d.key;exists=true;ui();say('Clé créée. Copie-la maintenant, elle ne sera plus affichée.');}
+  $('keyGet').addEventListener('click',function(){api('/api/key','POST').then(created).catch(function(){say('Impossible pour le moment.');});});
+  $('keyRenew').addEventListener('click',function(){
+    if(!confirm('Renouveler la clé révoque immédiatement l\'ancienne. Continuer ?'))return;
+    api('/api/key/renew','POST').then(created).catch(function(){say('Impossible pour le moment.');});
+  });
+  $('keyEye').addEventListener('click',function(){
+    if(!kv){say('La clé complète n\'est affichée qu\'à sa création.');return;}
+    inp.type=inp.type==='password'?'text':'password';
+  });
+  $('keyCopy').addEventListener('click',function(){
+    if(!kv){say('Rien à copier : la clé n\'est visible qu\'à sa création.');return;}
+    if(navigator.clipboard){navigator.clipboard.writeText(kv).then(function(){say('Clé copiée.');},function(){say('Copie impossible.');});}
+  });
+  api('/api/key').then(function(d){exists=!!(d&&d.exists);ui();}).catch(ui);
+  /* ---- Mes serveurs ---- */
+  var form=$('srvForm'),box=$('srvMine');
+  function load(){
+    api('/api/my-servers').then(function(a){
+      if(!Array.isArray(a))return;box.textContent='';
+      a.forEach(function(s){
+        var r=document.createElement('div');r.className='act';
+        var i=document.createElement('div');i.className='ai';i.textContent=s.online?'🟢':'⚪';
+        var t=document.createElement('div');t.className='at';
+        var n=document.createElement('b');n.textContent=s.name||'';
+        var h=document.createElement('div');h.className='mut';h.textContent=s.host||'';
+        t.appendChild(n);t.appendChild(h);r.appendChild(i);r.appendChild(t);box.appendChild(r);
+      });
+    }).catch(function(){});
+  }
+  $('srvAdd').addEventListener('click',function(){form.classList.toggle('off');});
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var n=$('srvName').value.trim(),h=$('srvHost').value.trim();
+    if(n.length<2||h.length<4){say('Remplis le nom et l\'adresse.');return;}
+    api('/api/my-servers','POST',{name:n,host:h}).then(function(){say('Serveur ajouté.');form.reset();form.classList.add('off');load();})
+      .catch(function(){say('Impossible pour le moment.');});
+  });
+  load();
 })();
 </script>
 <script src="/dash.js" defer></script>
