@@ -109,6 +109,14 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 .paybox p{margin:6px 0;color:var(--txt);font-size:14px}
 .paynum{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px 12px;border-radius:14px;background:#0a0e0d;border:1px dashed var(--g)}
 .paynum b{font-size:20px;letter-spacing:1px;color:var(--g2)}.paynum button{padding:8px 14px;font-size:13px}
+.sgrp{margin:14px 0 8px;color:var(--mut);font-size:13px;letter-spacing:.5px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sbox{padding:14px;border-radius:18px;background:#1b2420;border:1px solid var(--line)}
+.sbox span{display:block;color:var(--mut);font-size:13px}.sbox b{display:block;margin-top:6px;font-size:28px}
+.act{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px;border-radius:16px;background:#1b2420}
+.act .ai{width:40px;height:40px;border-radius:12px;background:#14382a;display:grid;place-items:center;flex:none}
+.act .at{flex:1;min-width:0;word-break:break-word}.act .tm{color:var(--mut);font-size:13px;white-space:nowrap}
+.promo{background:linear-gradient(180deg,#2a2410,var(--card));border-color:#5a4614}
 .price b{font-size:22px}.price .amt{text-align:right}.price .amt b{font-size:28px;color:#f7b24a}
 </style>
 </head>
@@ -134,7 +142,7 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 <section class="chips" data-v="home bots">
   <button class="w" id="showAdd">+ Ajouter un bot</button>
   <button class="ol" id="showHelp">🎮 Aide au déploiement</button>
-  <button class="o" id="showPremium">⭐ Premium</button>
+  <button class="o" id="showPremium">💰 Acheter des coins</button>
   <button class="line" id="showTransfer">✈ Transférer des coins</button>
 </section>
 
@@ -200,7 +208,31 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
 </section>
 
 <section class="card" data-v="home">
-  <details><summary>Statistiques</summary><p id="statsText"></p></details>
+  <details open><summary>Statistiques</summary>
+    <div class="sgrp">Vous</div>
+    <div class="sgrid">
+      <div class="sbox"><span>Bots déployés</span><b id="stBots">0</b></div>
+      <div class="sbox"><span>Uptime du plus ancien bot</span><b id="stUp">0h</b></div>
+    </div>
+    <div class="sgrp">Plateforme</div>
+    <div class="sgrid">
+      <div class="sbox"><span>Bots en ligne</span><b id="stOnline">–</b></div>
+      <div class="sbox"><span>Serveurs publics</span><b id="stServers">–</b></div>
+      <div class="sbox"><span>Utilisateurs</span><b id="stUsers">–</b></div>
+    </div>
+    <p id="statsText"></p>
+  </details>
+</section>
+
+<section class="card" data-v="home">
+  <details open><summary>Activité récente</summary>
+    <div id="actList"><p class="mut">Aucune activité pour le moment.</p></div>
+  </details>
+</section>
+
+<section class="card promo" data-v="home">
+  <div class="info"><div class="t">💰</div><div><h3>Besoin de coins ?</h3><p>Achète un pack de coins, puis utilise-les pour acheter un slot et connecter ton bot.</p></div></div>
+  <button class="o full" type="button" id="promoBuy">Acheter des coins</button>
 </section>
 
 <section class="card info" data-v="games"><div class="t">🎮</div><div><h3>Jeux</h3><p>Bientôt disponible.</p></div></section>
@@ -231,12 +263,12 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   <div class="sheet">
     <div class="phead">
       <div class="star">★</div>
-      <div class="tx"><h2 id="premTitle">Numéro Premium</h2><small>PAIEMENT REQUIS</small></div>
+      <div class="tx"><h2 id="premTitle">Acheter des coins</h2><small>PAIEMENT MOBILE MONEY</small></div>
       <button class="ic" type="button" id="premClose" aria-label="Fermer">✕</button>
     </div>
     <div class="pbody">
       <div class="perks"><b id="perkTitle"></b><ul id="perkList"></ul></div>
-      <label for="premPhone">📱 Numéro de téléphone WhatsApp</label>
+      <label for="premPhone">📱 Numéro avec lequel tu paies</label>
       <div class="phone">
         <select id="premCc" aria-label="Indicatif pays">
           <option value="224">🇬🇳 +224</option><option value="221">🇸🇳 +221</option><option value="225">🇨🇮 +225</option>
@@ -245,9 +277,9 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
         </select>
         <input id="premPhone" inputmode="numeric" placeholder="6XXXXXXXX" autocomplete="tel-national">
       </div>
-      <label>📅 Durée de l'abonnement</label>
+      <label>🪙 Choisis ton pack de coins</label>
       <div class="durs" id="durs" role="radiogroup" aria-label="Durée"></div>
-      <div class="price"><div><small>DURÉE</small><b id="pDur"></b></div><div class="amt"><small>PRIX</small><b id="pAmt"></b></div></div>
+      <div class="price"><div><small>TU REÇOIS</small><b id="pDur"></b></div><div class="amt"><small>PRIX</small><b id="pAmt"></b></div></div>
       <div id="payStep1"><button class="o full" type="button" id="premNext">Continuer</button></div>
       <div id="payStep2" class="off">
         <div class="paybox">
@@ -338,10 +370,11 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
     currency:'GNF',
     payNumber:'224610888616',   /* numéro qui reçoit les paiements */
     payMethod:'Mobile Money',   /* ex. : Orange Money, MTN MoMo */
-    plans:[{days:30,price:30000},{days:60,price:60000},{days:90,price:90000}],
-    perkTitle:'Avantages Premium',
-    perks:['Interface sans publicité sur tout le dashboard','Slot d\'abonnement inclus · Badge VIP · Statut Premium','Déploiement illimité même si la limite globale est atteinte'],
-    foot:'Activation après vérification du paiement'
+    /* Packs de coins : à adapter à tes prix (price en GNF) */
+    plans:[{coins:100,price:10000},{coins:300,price:25000},{coins:1000,price:75000}],
+    perkTitle:'À quoi servent les coins ?',
+    perks:['Acheter un slot pour connecter ton bot','Garder ton bot en ligne sur nos serveurs','Les coins sont crédités après vérification du paiement'],
+    foot:'Coins crédités après vérification du paiement'
   };
   var $=function(id){return document.getElementById(id);};
   var modal=$('premModal'),durs=$('durs'),sel=CFG.plans[0],opener=null;
@@ -350,12 +383,12 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
   function paint(){
     var bs=durs.querySelectorAll('button');
     for(var i=0;i<bs.length;i++){var on=CFG.plans[i]===sel;bs[i].classList.toggle('sel',on);bs[i].setAttribute('aria-checked',on?'true':'false');}
-    $('pDur').textContent=sel.days+' jours';$('pAmt').textContent=money(sel.price);
+    $('pDur').textContent=sel.coins+' coins';$('pAmt').textContent=money(sel.price);
   }
   $('perkTitle').textContent=CFG.perkTitle;$('premFoot').textContent=CFG.foot;
   CFG.perks.forEach(function(p){var li=document.createElement('li');li.textContent=p;$('perkList').appendChild(li);});
   CFG.plans.forEach(function(p){
-    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=p.days+' jours';
+    var b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=p.coins+' coins';
     b.addEventListener('click',function(){sel=p;paint();});durs.appendChild(b);
   });
   paint();
@@ -383,12 +416,43 @@ nav button span{font-size:20px}nav button.on{background:#14382a;color:var(--g2)}
     if(ref.length<4){say('Saisis la référence de la transaction.');return;}
     var btn=$('premPay');btn.disabled=true;
     fetch('/api/premium/request',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({days:sel.days,phone:cust,reference:ref})})
+      body:JSON.stringify({coins:sel.coins,phone:cust,reference:ref})})
       .then(function(r){return r.ok?Promise.resolve():Promise.reject();})
-      .then(function(){say('Demande envoyée. Activation après vérification.');$('payRef').value='';close();})
+      .then(function(){say('Demande envoyée. Tes coins arrivent après vérification.');$('payRef').value='';close();})
       .catch(function(){say('Envoi impossible pour le moment.');})
       .then(function(){btn.disabled=false;});
   });
+})();
+</script>
+<script>
+/* Statistiques, activité récente, bannière coins.
+   Routes attendues (facultatives, sinon les valeurs restent à « – ») :
+   GET /api/stats    -> {oldestUptimeHours, botsOnline, publicServers, users}
+   GET /api/activity -> [{icon, text, at}]  (at = date ISO) */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  function set(id,v){var e=$(id);if(e&&v!==undefined&&v!==null)e.textContent=v;}
+  var bc=$('botCount');
+  function mirror(){set('stBots',(bc.textContent||'').trim()||'0');}
+  new MutationObserver(mirror).observe(bc,{childList:true,characterData:true,subtree:true});mirror();
+  function get(u){return fetch(u,{credentials:'same-origin'}).then(function(r){return r.ok?r.json():Promise.reject();});}
+  get('/api/stats').then(function(d){
+    if(d.oldestUptimeHours!=null)set('stUp',d.oldestUptimeHours+'h');
+    set('stOnline',d.botsOnline);set('stServers',d.publicServers);set('stUsers',d.users);
+  }).catch(function(){});
+  function ago(t){var m=Math.max(0,Math.round((Date.now()-new Date(t).getTime())/60000));if(isNaN(m))return '';if(m<60)return m+' min';var h=Math.round(m/60);return h<24?h+' h':Math.round(h/24)+' j';}
+  get('/api/activity').then(function(a){
+    if(!Array.isArray(a)||!a.length)return;
+    var list=$('actList');list.textContent='';
+    a.slice(0,5).forEach(function(x){
+      var r=document.createElement('div');r.className='act';
+      var i=document.createElement('div');i.className='ai';i.textContent=x.icon||'•';
+      var t=document.createElement('div');t.className='at';t.textContent=x.text||'';
+      var m=document.createElement('span');m.className='tm';m.textContent=ago(x.at);
+      r.appendChild(i);r.appendChild(t);r.appendChild(m);list.appendChild(r);
+    });
+  }).catch(function(){});
+  $('promoBuy').addEventListener('click',function(){var b=$('showPremium');if(b)b.click();});
 })();
 </script>
 <script src="/dash.js" defer></script>
