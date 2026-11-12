@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import { mountGames } from './games.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -384,6 +385,9 @@ app.post('/api/dm/:uid', auth, (req, res) => {
   writeJson(DM_FILE, all.slice(-3000));
   res.json({ ok: true });
 });
+
+// Jeux (Dames, Aviator, Foot virtuel) : routes /api/games/*
+mountGames(app, { auth, saveUser });
 
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Route API introuvable.' }));
 app.listen(PORT, '0.0.0.0', () => console.log(`ZEPE TECH prêt sur le port ${PORT}`));
