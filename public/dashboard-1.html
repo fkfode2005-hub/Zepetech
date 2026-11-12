@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZEPE TECH · Dashboard</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b1018">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ZEPE TECH">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--bg:#0b1018;--card:#151a24;--line:#26303f;--g:#3b82f6;--g2:#60a5fa;--txt:#f1f5fb;--mut:#93a0b8;--or:#f59a23;--bad:#ef6a5b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(800px 380px at 20% 0,#101c33,transparent),var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:0 14px 110px}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;gap:10px;align-items:center}.brand b{display:block;letter-spacing:.5px}.brand small{color:var(--mut);font-size:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,var(--g2));display:grid;place-items:center;font-weight:800;color:#04101f;font-size:20px}
+.hicons{display:flex;gap:8px;align-items:center}
+.ic{background:#181e2b;border:0;border-radius:14px;width:40px;height:40px;font-size:18px;padding:0;color:var(--txt)}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:11px 18px;font-weight:700}
+.g{background:var(--g);color:#04101f}.w{background:#f3f6f4;color:#0b1018}.o{background:linear-gradient(90deg,#f5a623,#e8741c);color:#1b0e02}
+.ol{background:#0f1b33;color:var(--g2);border:1px solid #1e4a8f}.line{background:transparent;color:var(--txt);border:1px solid var(--line)}
+.danger{background:transparent;color:var(--bad);border:1px solid #4a2420}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
+.hidden,.off{display:none!important}
+section{margin-top:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px}
+.av{width:84px;height:84px;border-radius:50%;background:#4a2c22;border:4px solid var(--g);display:grid;place-items:center;font-size:36px;font-weight:700;position:relative;flex:none}
+.av i{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--g);color:#04101f;font-style:normal;font-size:14px;display:grid;place-items:center;border:2px solid var(--bg)}
+.av.sm{width:40px;height:40px;font-size:18px;border-width:2px}
+.who{display:flex;gap:16px;align-items:center;margin-top:18px}.who h1{margin:0;font-size:28px}
+.mut{color:var(--mut);font-size:14px;margin:2px 0 0;word-break:break-all}
+.lvl{display:flex;justify-content:space-between;margin-top:18px;font-weight:700}.lvl span:last-child{color:var(--mut);font-weight:400}
+.bar{height:10px;background:#1c2433;border-radius:9px;margin-top:8px;overflow:hidden}.bar div{height:100%;width:0;background:var(--g);border-radius:9px}
+.coins{display:flex;align-items:center;gap:14px}.coins .big{font-size:40px;font-weight:800;line-height:1}
+.coins .r{margin-left:auto;text-align:right}
+.chips{display:flex;gap:10px;overflow-x:auto;padding:2px 0}.chips button{white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.stats b{display:block;font-size:26px}.stats span{color:var(--mut);font-size:13px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#6b7690;margin-right:6px}.dot.on{background:var(--g)}
+.info{display:flex;gap:14px;align-items:flex-start}.info .t{width:48px;height:48px;border-radius:14px;background:#15294d;display:grid;place-items:center;font-size:22px;flex:none}
+.info .t.b{background:#17263d}.info h3{margin:0 0 4px;font-size:18px}.info p{margin:0;color:var(--mut)}
+.full{width:100%;margin-top:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h2{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}
+.badge{font-size:13px;padding:2px 10px;border-radius:99px;background:#15294d;border:1px solid #1e4a8f;color:var(--g2)}.badge.or{background:#3a2608;border-color:#7a4d10;color:#f7b24a}
+label{display:block;margin:12px 0 6px;color:var(--mut);font-size:14px}
+input{width:100%;background:#080c14;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px;font:inherit}
+.bot{border-top:1px solid var(--line);padding:14px 0;margin-top:12px}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mut)}
+.pill.online{color:var(--g2);border-color:#1e4a8f}.pill.pairing,.pill.starting{color:#f7b24a;border-color:#7a4d10}
+.code{margin:10px 0;padding:12px;border-radius:14px;background:#0f1b33;border:1px dashed var(--g);text-align:center}
+.code b{display:block;font-size:30px;letter-spacing:6px;color:var(--g2)}
+.acts{display:flex;gap:8px;margin-top:10px}
+details summary{cursor:pointer;font-size:24px;font-weight:700;list-style:none}details p{margin:10px 0 0;color:var(--mut)}
+nav{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;background:#0b1019f2;border:1px solid var(--line);border-radius:26px;padding:6px}
+nav button{flex:1;background:transparent;color:var(--mut);border-radius:20px;padding:8px 2px;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:20px}nav button.on{background:#14305c;color:var(--g2)}
+#toast{position:fixed;left:16px;right:16px;top:12px;z-index:5;background:#14305c;border:1px solid var(--g);color:var(--g2);padding:12px 14px;border-radius:14px;opacity:0;pointer-events:none}#toast.show{opacity:1}
+.steps3{display:flex;gap:8px;list-style:none;padding:0;margin:12px 0 4px}.steps3 li{flex:1;text-align:center;font-size:12px;padding:8px 4px;border-radius:12px;background:#181e2b;color:var(--mut)}.steps3 li.on{background:#14305c;color:var(--g2)}
+.chatlist{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow-y:auto;margin:14px 0;padding-right:4px}
+.cm{align-self:flex-start;max-width:88%;padding:10px 13px;border-radius:16px 16px 16px 4px;background:#171e2c}
+.cm.me{align-self:flex-end;border-radius:16px 16px 4px 16px;background:#14305c}
+.cmeta{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--g2);font-weight:700}
+.cmeta .t2{color:var(--mut);font-size:11px;font-weight:400}
+.cmeta .rl{font-size:10px;padding:1px 7px;border-radius:99px;background:#3a2608;border:1px solid #7a4d10;color:#f7b24a;font-weight:600}
+.cm p{margin:4px 0 0;word-break:break-word}
+.cm .del{background:none;border:0;color:var(--bad);padding:0 2px;font-size:12px;margin-left:auto}
+.chatform{display:flex;gap:8px}.chatform input{flex:1}
+.ic{position:relative}
+.badge2{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;display:grid;place-items:center}
+.conv{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px;border-radius:16px;background:#171e2c;color:var(--txt);text-align:left;border:1px solid var(--line)}
+.cav{width:40px;height:40px;border-radius:50%;background:#14305c;color:var(--g2);display:grid;place-items:center;font-weight:700;flex:none}
+.cinfo{display:flex;flex-direction:column;min-width:0;flex:1}.cinfo small{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dmSearch{margin-top:12px}
+
+/* ---- Ajout : choix du serveur + compteur de slots ---- */
+.slotnote{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:12px 14px;border-radius:16px;background:#0f1b33;border:1px solid #1e4a8f}
+.slotnote.none{background:#2a1512;border-color:#4a2420}
+.slotnote .txt{display:flex;flex-direction:column;font-size:14px}.slotnote .txt small{color:var(--mut)}
+.slotnote .cnt{font-weight:800;font-size:15px;color:var(--g2);white-space:nowrap}.slotnote.none .cnt{color:var(--bad)}
+.slotnote button{padding:8px 14px;font-size:13px}
+.srvhead{margin:16px 0 4px;color:var(--mut);font-size:14px}
+.srv{display:block;width:100%;text-align:left;margin-top:10px;padding:14px;border-radius:18px;background:#171e2c;color:var(--txt);border:1px solid var(--line);font-weight:400}
+.srv.sel{border-color:var(--g);background:#0f1b33}
+.srv.full{opacity:.55;border-style:dashed;border-color:#4a2420;cursor:not-allowed}
+.srv .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.srv .nm{font-weight:700;font-size:17px}
+.srv .st{font-size:13px;color:var(--g2);display:flex;align-items:center;gap:6px;margin-top:2px}
+.srv .st.offl{color:var(--mut)}
+.srv .cap{font-size:12px;padding:3px 10px;border-radius:99px;background:#17263d;color:#8ab4ff;border:1px solid #243b66;white-space:nowrap}
+.srv.full .cap{background:#2a1512;color:var(--bad);border-color:#4a2420}
+.srv .meta{margin-top:6px;font-size:12px;color:var(--mut)}
+
+/* ---- Ajout : fenêtre Premium ---- */
+.mod{position:fixed;inset:0;z-index:20;background:#000000b3;display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid #4a3a14;border-radius:26px 26px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+.phead{display:flex;align-items:center;gap:14px;padding:18px;background:linear-gradient(180deg,#2e2410,#1b1a13);border-radius:26px 26px 0 0}
+.phead .star{width:44px;height:44px;border-radius:14px;background:#4a3a14;color:#f7b24a;display:grid;place-items:center;font-size:24px;flex:none}
+.phead h2{font-size:22px}.phead small{color:#f7b24a;font-weight:700;letter-spacing:.5px;font-size:12px}
+.phead .tx{flex:1;min-width:0}
+.pbody{padding:0 18px}
+.perks{margin-top:16px;padding:14px 16px;border-radius:18px;background:#2a2410;border:1px solid #5a4614}
+.perks b{color:#f7d27a;font-size:16px}.perks ul{list-style:none;margin:8px 0 0;padding:0;color:#e8dfc2;font-size:14px}
+.perks li{margin-top:6px}.perks li::before{content:"✓ ";color:#f7b24a;font-weight:700}
+.phone{display:flex;gap:8px}.phone select{background:#080c14;color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:13px 8px;font:inherit;max-width:42%}
+.durs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.durs button{background:#171e2c;color:var(--mut);border:2px solid var(--line);border-radius:16px;padding:16px 4px;font-size:16px}
+.durs button.sel{border-color:#f5a623;background:#2a2410;color:#f7b24a}
+.price{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px;padding:16px;border-radius:18px;background:#2a2410;border:1px solid #5a4614}
+.price small{display:block;color:var(--mut);font-weight:700;letter-spacing:.5px;font-size:12px}
+.paybox{margin-top:14px;padding:14px 16px;border-radius:18px;background:#0f1b33;border:1px solid #1e4a8f}
+.paybox p{margin:6px 0;color:var(--txt);font-size:14px}
+.paynum{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:10px 12px;border-radius:14px;background:#080c14;border:1px dashed var(--g)}
+.paynum b{font-size:20px;letter-spacing:1px;color:var(--g2)}.paynum button{padding:8px 14px;font-size:13px}
+.sgrp{margin:14px 0 8px;color:var(--mut);font-size:13px;letter-spacing:.5px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sbox{padding:14px;border-radius:18px;background:#171e2c;border:1px solid var(--line)}
+.sbox span{display:block;color:var(--mut);font-size:13px}.sbox b{display:block;margin-top:6px;font-size:28px}
+.act{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px;border-radius:16px;background:#171e2c}
+.act .ai{width:40px;height:40px;border-radius:12px;background:#14305c;display:grid;place-items:center;flex:none}
+.act .at{flex:1;min-width:0;word-break:break-word}.act .tm{color:var(--mut);font-size:13px;white-space:nowrap}
+.keycard{border-top:3px solid var(--g)}
+.keyrow{display:flex;gap:8px;align-items:center}.keyrow input{flex:1;min-width:0}
+code{background:#0f1b33;color:var(--g2);padding:1px 6px;border-radius:6px;font-size:13px}
+.warn{margin-top:14px;padding:12px 14px;border-radius:14px;background:#2a2410;border:1px solid #5a4614;color:#f3e3b5;font-size:14px}
+.codebox{margin-top:14px;padding:14px;border-radius:16px;background:#0e1320;border:1px solid var(--line)}
+.codebox small{color:var(--mut);font-weight:700;letter-spacing:.5px}
+.codebox pre{margin:10px 0 0;white-space:pre-wrap;word-break:break-all;color:var(--g2);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.commlink{align-items:center;text-decoration:none;color:inherit;border-top:3px solid var(--g)}
+.promo{background:linear-gradient(180deg,#2a2410,var(--card));border-color:#5a4614}
+#advHead .mut,.keycard .mut,.keycard label,.promo p,.commlink p,#premModal .mut,.paybox p,.warn,.perks li{word-break:normal;overflow-wrap:break-word}
+.price b{font-size:22px}.price .amt{text-align:right}.price .amt b{font-size:28px;color:#f7b24a}
+</style>
+</head>
+<body>
+<div id="toast" role="status"></div>
+<header>
+  <div class="brand"><div class="mark">Z</div><div><b>ZEPE TECH</b><small>Dashboard</small></div></div>
+  <div class="hicons"><button class="ic" data-soon aria-label="Classement">🏆</button><button class="ic" data-soon aria-label="Notifications">🔔</button><div class="av sm" id="hav">?</div><button class="ic" id="dmBtn" data-soon aria-label="Messages privés">💬<b id="dmBadge" class="badge2 off"></b></button></div>
+</header>
+
+<section data-v="home">
+  <div class="who"><div class="av" id="avatar">?<i>✓</i></div><div><h1 id="name">Chargement…</h1><p class="mut" id="email"></p><p class="mut" id="since"></p></div></div>
+  <div class="lvl"><span id="lvl">Niveau 1</span><span id="xp">0/1000 XP</span></div>
+  <div class="bar"><div id="xpbar"></div></div>
+</section>
+
+<section class="card coins" data-v="home">
+  <div style="font-size:44px">💰</div>
+  <div><div class="big" id="coins">–</div><div class="mut">ZepeCoins</div></div>
+  <div class="r"><button class="g" id="claim">+ Obtenir des coins</button><div class="mut" id="claims" style="margin-top:6px"></div></div>
+</section>
+
+<section class="chips" data-v="home bots">
+  <button class="w" id="showAdd">+ Ajouter un bot</button>
+  <button class="ol" id="showHelp">🎮 Aide au déploiement</button>
+  <button class="o" id="showPremium">💰 Acheter des coins</button>
+  <button class="ol off" id="installApp" type="button">📲 Installer l'app</button>
+  <button class="line" id="showTransfer">✈ Transférer des coins</button>
+</section>
+
+<section class="card off" id="helpBox">
+  <h2>Aide au déploiement</h2>
+  <p class="mut">1. Ajoute un bot avec ton numéro WhatsApp.<br>2. Achète un slot avec tes coins.<br>3. Touche Démarrer sur ton bot.<br>4. Dans WhatsApp : Appareils connectés, Connecter avec un numéro, puis saisis le code affiché.</p>
+</section>
+<section class="card off" id="addBox">
+  <h2>Déployer un bot</h2>
+  <ol class="steps3"><li id="s1" class="on">1 · Numéro</li><li id="s2">2 · Code</li><li id="s3">3 · En ligne</li></ol>
+  <div id="w1">
+    <div class="slotnote" id="slotNote">
+      <div class="txt"><span>🎟 Slots actifs</span><small id="slotNoteSub"></small></div>
+      <span class="cnt" id="slotNoteCnt">0</span>
+      <button class="o" type="button" id="slotNoteBuy">Acheter un slot</button>
+    </div>
+    <div class="srvhead">Choisis ton serveur d'hébergement</div>
+    <div id="srvList" role="radiogroup" aria-label="Serveur d'hébergement"></div>
+    <input id="serverId" type="hidden" value="">
+    <label for="phone">Numéro WhatsApp</label><input id="phone" inputmode="numeric" placeholder="224XXXXXXXXX">
+    <p class="mut">Format international, chiffres uniquement, sans + ni espaces. Le numéro doit être le tien ou tu dois être autorisé à le connecter.</p>
+    <button class="g full" id="deployBtn">Déployer</button>
+  </div>
+  <div id="w2" class="off">
+    <p class="mut">Dans WhatsApp : Appareils connectés, Connecter avec un numéro, puis saisis ce code.</p>
+    <div class="code"><b id="wcode">…</b></div>
+  </div>
+  <div id="w3" class="off">
+    <p>✅ Ton bot est en ligne. Écris !menu pour voir les commandes.</p>
+    <button class="g full" id="wdone">Terminer</button>
+  </div>
+</section>
+<section class="card off" id="transferBox">
+  <h2>Transférer des coins</h2>
+  <label for="tmail">E-mail du destinataire</label><input id="tmail" type="email">
+  <label for="tamount">Montant</label><input id="tamount" inputmode="numeric">
+  <button class="g full" id="sendCoins">Envoyer</button>
+</section>
+
+<section class="card stats" data-v="home">
+  <div><b><i class="dot on"></i><span id="sOn">0</span></b><span>en ligne</span></div>
+  <div><b><i class="dot"></i><span id="sOff">0</span></b><span>hors ligne</span></div>
+  <div><b>🎟 <span id="sSlots">0</span></b><span>slots actifs</span></div>
+</section>
+
+<section class="card info off" id="firstBot" data-v="home">
+  <div class="t">🚀</div>
+  <div style="flex:1"><h3>Connectez votre premier bot</h3><p>Entrez votre numéro, saisissez le code de jumelage dans WhatsApp, et votre bot est en ligne en moins d'une minute.</p><button class="g full" id="firstAdd">Ajouter un bot</button></div>
+</section>
+<section class="card info off" id="needSlot" data-v="home">
+  <div class="t b">ℹ</div>
+  <div style="flex:1"><h3>Un slot est nécessaire</h3><p>Il faut un slot actif pour faire tourner un bot.</p><button class="line full" id="needBuy">Acheter un slot</button></div>
+</section>
+
+<section class="card" id="bots" data-v="home bots">
+  <div class="row"><h2>Mes bots <span class="badge" id="botCount">0</span></h2><button class="g" id="addTop">+ Ajouter</button></div>
+  <div id="botList"></div>
+</section>
+
+<section class="card" id="slots" data-v="home bots">
+  <div class="row"><h2>Mes Slots <span class="badge or" id="slotCount">0</span></h2><button class="o" id="buySlot">Acheter</button></div>
+  <p class="mut" id="slotInfo" style="margin-top:12px"></p>
+</section>
+
+<section class="card" data-v="home">
+  <details open><summary>Statistiques</summary>
+    <div class="sgrp">Vous</div>
+    <div class="sgrid">
+      <div class="sbox"><span>Bots déployés</span><b id="stBots">0</b></div>
+      <div class="sbox"><span>Uptime du plus ancien bot</span><b id="stUp">0h</b></div>
+    </div>
+    <div class="sgrp">Plateforme</div>
+    <div class="sgrid">
+      <div class="sbox"><span>Bots en ligne</span><b id="stOnline">–</b></div>
+      <div class="sbox"><span>Serveurs publics</span><b id="stServers">–</b></div>
+      <div class="sbox"><span>Utilisateurs</span><b id="stUsers">–</b></div>
+    </div>
+    <p id="statsText"></p>
+  </details>
+</section>
+
+<section class="card" data-v="home">
+  <details open><summary>Activité récente</summary>
+    <div id="actList"><p class="mut">Aucune activité pour le moment.</p></div>
+  </details>
+</section>
+
+<section class="card promo" data-v="home">
+  <div class="info"><div class="t">💰</div><div><h3>Besoin de coins ?</h3><p>Achète un pack de coins, puis utilise-les pour acheter un slot et connecter ton bot.</p></div></div>
+  <button class="o full" type="button" id="promoBuy">Acheter des coins</button>
+</section>
+
+<section data-v="home">
+  <a class="card info commlink" href="https://chat.whatsapp.com/EJL95p02XeqAGdKiilUgNE?s=cl&amp;p=a&amp;mlu=4&amp;ilr=4&amp;iam=2" target="_blank" rel="noopener noreferrer">
+    <div class="t b">🌐</div>
+    <div style="flex:1"><h3>Communauté</h3><p>Rejoignez-nous sur WhatsApp</p></div>
+    <span aria-hidden="true" style="font-size:22px;color:var(--mut)">›</span>
+  </a>
+</section>
+
+<section data-v="home" id="advHead">
+  <p class="mut" style="margin:22px 0 4px;letter-spacing:.5px">Outils avancés</p>
+  <h2 style="font-size:26px">Hébergement et intégrations</h2>
+  <p class="mut" style="margin-top:8px">Publiez votre propre serveur ou pilotez vos bots depuis une application externe.</p>
+</section>
+
+<section class="card" data-v="home" id="mySrv">
+  <div class="row">
+    <div><h2>🖥 Mes serveurs</h2><small style="color:var(--g2);letter-spacing:.5px">HÉBERGEMENT &amp; NŒUDS</small></div>
+    <button class="g" type="button" id="srvAdd">+ Ajouter un serveur</button>
+  </div>
+  <form id="srvForm" class="off">
+    <label for="srvName">Nom du serveur</label><input id="srvName" maxlength="40" autocomplete="off">
+    <label for="srvHost">Adresse (IP ou URL)</label><input id="srvHost" maxlength="120" autocomplete="off" placeholder="https://mon-serveur.exemple.com">
+    <button class="g full" type="submit">Enregistrer</button>
+  </form>
+  <div id="srvMine"></div>
+</section>
+
+<section class="card keycard" data-v="home" id="keyCard">
+  <h2>🔑 Clé API</h2><small style="color:var(--g2);letter-spacing:.5px">INTÉGRATION EXTERNE</small>
+  <p class="mut" style="margin-top:12px">Utilise ta clé API pour interagir avec tes bots depuis une application externe, via l'en-tête <code>x-api-key</code>.</p>
+  <label for="apiKey">VOTRE CLÉ API</label>
+  <div class="keyrow">
+    <input id="apiKey" type="text" readonly autocomplete="off" placeholder="Aucune clé pour le moment">
+    <button class="ic" type="button" id="keyEye" aria-label="Afficher ou masquer la clé">👁</button>
+    <button class="g" type="button" id="keyCopy">Copier</button>
+  </div>
+  <button class="g full" type="button" id="keyGet">🔑 Obtenir ma clé</button>
+  <button class="line full off" type="button" id="keyRenew">🔄 Renouveler la clé</button>
+  <div class="warn">⚠ Renouveler ta clé <b>révoque immédiatement</b> l'ancienne. Toutes tes intégrations devront être mises à jour.</div>
+  <p class="mut" style="margin-top:10px">Pour ta sécurité, la clé complète n'est affichée qu'une seule fois, à sa création.</p>
+  <div class="codebox"><small>EXEMPLE D'UTILISATION</small><pre id="keyEx"></pre></div>
+</section>
+
+<section class="card info" data-v="games"><div class="t">🎮</div><div style="flex:1"><h3>Jeux</h3><p>Dames, Aviator et Foot virtuel : gagnez des coins sans rien miser.</p><a class="g full" href="/jeux.html" style="display:block;text-align:center;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:700;color:#04101f">🎮 Ouvrir les jeux</a></div></section>
+<section class="card" data-v="messages">
+  <h2>Groupe</h2><p class="mut">Discussion ouverte à tous les membres.</p>
+  <div id="chatList" class="chatlist" aria-live="polite"></div>
+  <form id="chatForm" class="chatform"><input id="chatInput" maxlength="300" placeholder="Écris un message…" autocomplete="off" aria-label="Message"><button class="g" type="submit">Envoyer</button></form>
+</section>
+<section class="card" data-v="settings">
+  <h2>Réglages</h2>
+  <p class="mut" id="setInfo" style="margin:10px 0 14px"></p>
+  <div id="setLinks"></div>
+  <button class="danger full" id="logout">Déconnexion</button>
+</section>
+
+<section class="card" data-v="dm" id="dmHome">
+  <div class="row"><h2>Messages privés</h2><button class="g" id="dmNew" type="button">Nouveau</button></div>
+  <div id="dmPicker" class="off"><input id="dmSearch" placeholder="Chercher un membre…" aria-label="Chercher un membre" autocomplete="off"><div id="dmMembers"></div></div>
+  <div id="dmConvs"></div>
+</section>
+<section class="card off" data-v="dm" id="dmThreadCard">
+  <div class="row"><button class="line" id="dmBack" type="button">← Retour</button><strong id="dmWith"></strong></div>
+  <div id="dmList" class="chatlist" aria-live="polite"></div>
+  <form id="dmForm" class="chatform"><input id="dmInput" maxlength="300" placeholder="Écris un message…" autocomplete="off" aria-label="Message"><button class="g" type="submit">Envoyer</button></form>
+</section>
+
+<div class="mod off" id="premModal" role="dialog" aria-modal="true" aria-labelledby="premTitle">
+  <div class="sheet">
+    <div class="phead">
+      <div class="star">★</div>
+      <div class="tx"><h2 id="premTitle">Acheter des coins</h2><small>PAIEMENT MOBILE MONEY</small></div>
+      <button class="ic" type="button" id="premClose" aria-label="Fermer">✕</button>
+    </div>
+    <div class="pbody">
+      <div class="perks"><b id="perkTitle"></b><ul id="perkList"></ul></div>
+      <label for="premPhone">📱 Numéro avec lequel tu paies</label>
+      <div class="phone">
+        <select id="premCc" aria-label="Indicatif pays">
+          <option value="224">🇬🇳 +224</option><option value="221">🇸🇳 +221</option><option value="225">🇨🇮 +225</option>
+          <option value="223">🇲🇱 +223</option><option value="237">🇨🇲 +237</option><option value="228">🇹🇬 +228</option>
+          <option value="229">🇧🇯 +229</option><option value="33">🇫🇷 +33</option><option value="1">🇺🇸 +1</option>
+        </select>
+        <input id="premPhone" inputmode="numeric" placeholder="6XXXXXXXX" autocomplete="tel-national">
+      </div>
+      <label>🪙 Choisis ton pack de coins</label>
+      <div class="durs" id="durs" role="radiogroup" aria-label="Durée"></div>
+      <div class="price"><div><small>TU REÇOIS</small><b id="pDur"></b></div><div class="amt"><small>PRIX</small><b id="pAmt"></b></div></div>
+      <div id="payStep1"><button class="o full" type="button" id="premNext">Continuer</button></div>
+      <div id="payStep2" class="off">
+        <div class="paybox">
+          <p>1. Envoie <b id="payAmt"></b> par <span id="payMethod"></span> au numéro :</p>
+          <div class="paynum"><b id="payNum"></b><button class="line" type="button" id="payCopy">Copier</button></div>
+          <p>2. Saisis ci-dessous la référence de la transaction (reçue par SMS).</p>
+        </div>
+        <label for="payRef">Référence de la transaction</label>
+        <input id="payRef" maxlength="40" autocomplete="off" placeholder="Ex. : MP2611…">
+        <button class="o full" type="button" id="premPay">✅ J'ai payé</button>
+        <button class="line full" type="button" id="payBack">← Retour</button>
+      </div>
+      <p class="mut" id="premFoot" style="text-align:center;margin-top:12px"></p>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button data-go="home" class="on"><span>🏠</span>Accueil</button>
+  <button data-go="bots"><span>🤖</span>Mes bots</button>
+  <button data-go="games"><span>🎮</span>Jeux</button>
+  <button data-go="messages"><span>👥</span>Groupe</button>
+  <button data-go="settings"><span>⚙️</span>Réglages</button>
+</nav>
+
+<script src="/zepe-extra.js" defer></script>
+<script src="/dash.js" defer></script>
+</body>
+</html>
