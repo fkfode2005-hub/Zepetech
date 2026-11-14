@@ -232,8 +232,11 @@ app.post('/api/bots/:id/start', auth, (req, res) => {
       } catch {}
     }
   });
-  child.stderr.resume();
-  child.on('exit', () => { if (workers.get(bot.id) === record) workers.delete(bot.id); });
+  child.stderr.on('data', d => console.error('[bot ' + bot.phone + '] ' + d.toString().trim().slice(0, 600)));
+  child.on('exit', (code, signal) => {
+    console.error('[bot ' + bot.phone + '] arrêté (code=' + code + ', signal=' + signal + ')');
+    if (workers.get(bot.id) === record) workers.delete(bot.id);
+  });
   res.json({ ok: true, message: 'Démarrage en cours. Le code de jumelage arrive dans quelques secondes.' });
 });
 
